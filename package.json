@@ -15,6 +15,13 @@
   ],
   "author": "Maldan",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maldan/tslib-rest-server.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@maldan"
+  },
   "devDependencies": {
     "@types/mime": "^2.0.3",
     "@types/node": "^14.14.22",
