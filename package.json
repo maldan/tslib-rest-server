@@ -1,5 +1,5 @@
 {
-  "name": "@maldan/rest-server",
+  "name": "@maldan/tslib-rest-server",
   "version": "1.0.1",
   "description": "Web Server for Rest API",
   "main": "dist/index.js",
