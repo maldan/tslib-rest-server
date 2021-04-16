@@ -20,7 +20,7 @@
     "url": "git+https://github.com/maldan/tslib-rest-server.git"
   },
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com/@maldan"
+    "registry": "https://npm.pkg.github.com/"
   },
   "devDependencies": {
     "@types/mime": "^2.0.3",
