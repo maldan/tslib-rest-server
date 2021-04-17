@@ -5,5 +5,5 @@ declare type ConfigParams = {
     isNumber?: string[];
     isPositive?: string[];
 };
-export declare function Config({ useJsonWrapper, isNotEmpty, isPositive, isInteger, isNumber, }: ConfigParams): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+export declare function Config({ useJsonWrapper, isNotEmpty, isPositive, isInteger, isNumber, }: ConfigParams): (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor) => void;
 export {};
