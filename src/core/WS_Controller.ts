@@ -52,6 +52,7 @@ export class WS_Controller {
     // this._functionList[fnName].function['sas'] = 1;
     const binded = this._functionList[fnName].function.bind(this._sc, {
       ...args,
+      ctx,
       accessToken: ctx.authorization,
     });
     return await binded();

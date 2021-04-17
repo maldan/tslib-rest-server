@@ -1,6 +1,6 @@
 import { WS_Error } from '../error/WS_Error';
 
-export class WS_DefaultClass {
+export class WS_Validator {
   static isNotEmpty(args: { [x: string]: any }): void {
     for (const key in args) {
       const arg = args[key];
@@ -81,11 +81,4 @@ export class WS_DefaultClass {
       }
     }
   }
-
-  /*static json(value: unknown): unknown {
-    return {
-      status: true,
-      response: value,
-    };
-  }*/
 }

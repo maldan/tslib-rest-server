@@ -106,10 +106,49 @@ class WebServer {
                 res.end();
                 return;
             }
+            const sendError = (status, e, message = '') => {
+                if (!e) {
+                    ctx.contentType = 'application/json';
+                    ctx.status = status;
+                    res.writeHead(ctx.status, ctx.headers);
+                    res.end(JSON.stringify({
+                        status: false,
+                        description: message,
+                    }));
+                    return;
+                }
+                if (e instanceof WS_Error_1.WS_Error) {
+                    ctx.contentType = 'application/json';
+                    ctx.status = e.code;
+                    res.writeHead(ctx.status, ctx.headers);
+                    res.end(JSON.stringify({
+                        status: false,
+                        type: e.type,
+                        value: e.value,
+                        description: e.description,
+                    }));
+                }
+                else {
+                    ctx.contentType = 'application/json';
+                    ctx.status = status;
+                    res.writeHead(ctx.status, ctx.headers);
+                    res.end(JSON.stringify({
+                        status: false,
+                        description: e.message,
+                        stack: e.stack,
+                    }));
+                }
+            };
             const sas = (data) => __awaiter(this, void 0, void 0, function* () {
                 let args = this.parseQueryParams(url);
                 if (req.headers['content-type'] && req.headers['content-type'].match('application/json')) {
-                    args = Object.assign(Object.assign({}, JSON.parse(data.toString())), args);
+                    try {
+                        args = Object.assign(Object.assign({}, JSON.parse(data.toString())), args);
+                    }
+                    catch (e) {
+                        sendError(500, e);
+                        return;
+                    }
                 }
                 try {
                     let isFound = false;
@@ -161,36 +200,11 @@ class WebServer {
                         }
                     }
                     if (!isFound) {
-                        res.writeHead(404, ctx.headers);
-                        res.end(JSON.stringify({
-                            status: false,
-                            description: 'Path not found',
-                        }));
+                        sendError(404, undefined, 'Path not found');
                     }
                 }
                 catch (e) {
-                    if (e instanceof WS_Error_1.WS_Error) {
-                        ctx.contentType = 'application/json';
-                        ctx.status = e.code;
-                        res.writeHead(ctx.status, ctx.headers);
-                        res.end(JSON.stringify({
-                            status: false,
-                            type: e.type,
-                            value: e.value,
-                            description: e.description,
-                        }));
-                    }
-                    else {
-                        ctx.contentType = 'application/json';
-                        ctx.status = 500;
-                        res.writeHead(ctx.status, ctx.headers);
-                        res.end(JSON.stringify({
-                            status: false,
-                            description: e.message,
-                            stack: e.stack,
-                        }));
-                        console.error(e);
-                    }
+                    sendError(500, e);
                 }
             });
             if (ctx.contentLength > 0) {

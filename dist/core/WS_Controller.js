@@ -52,7 +52,7 @@ class WS_Controller {
             }
             // this._sc['context'] = ctx;
             // this._functionList[fnName].function['sas'] = 1;
-            const binded = this._functionList[fnName].function.bind(this._sc, Object.assign(Object.assign({}, args), { accessToken: ctx.authorization }));
+            const binded = this._functionList[fnName].function.bind(this._sc, Object.assign(Object.assign({}, args), { ctx, accessToken: ctx.authorization }));
             return yield binded();
             /*return await FunctionHelper.callFunctionWithArgumentNames(
               this._functionList[fnName].function,
