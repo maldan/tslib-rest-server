@@ -31,6 +31,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebServer = void 0;
 const Http = __importStar(require("http"));
 const Fs = __importStar(require("fs"));
+const Multipart = __importStar(require("parse-multipart-data"));
 const WS_Router_1 = require("./core/WS_Router");
 const WS_Context_1 = require("./core/WS_Context");
 const WS_Error_1 = require("./error/WS_Error");
@@ -140,14 +141,44 @@ class WebServer {
                 }
             };
             const sas = (data) => __awaiter(this, void 0, void 0, function* () {
+                var _a;
                 let args = this.parseQueryParams(url);
-                if (req.headers['content-type'] && req.headers['content-type'].match('application/json')) {
-                    try {
-                        args = Object.assign(Object.assign({}, JSON.parse(data.toString())), args);
+                if (req.headers['content-type']) {
+                    // JSON
+                    if (req.headers['content-type'].match('application/json')) {
+                        try {
+                            args = Object.assign(Object.assign({}, JSON.parse(data.toString('utf-8'))), args);
+                        }
+                        catch (e) {
+                            return sendError(500, e);
+                        }
                     }
-                    catch (e) {
-                        sendError(500, e);
-                        return;
+                    // Multipart form
+                    if (req.headers['content-type'] &&
+                        req.headers['content-type'].match(/^multipart\/form-data;/)) {
+                        const boundary = ((_a = req.headers['content-type'].split('; ').pop()) === null || _a === void 0 ? void 0 : _a.trim()) || '';
+                        if (boundary) {
+                            const parts = Multipart.parse(data, boundary.split('=').pop() || '');
+                            const formArgs = {};
+                            for (let i = 0; i < parts.length; i++) {
+                                if (parts[i].filename) {
+                                    formArgs['files'] = formArgs['files'] || [];
+                                    formArgs['files'].push({
+                                        name: parts[i].filename,
+                                        type: parts[i].type,
+                                        data: parts[i].data,
+                                        size: parts[i].data.length,
+                                    });
+                                }
+                                else if (parts[i].name) {
+                                    formArgs[parts[i].name] = parts[i].data.toString('utf-8');
+                                }
+                            }
+                            args = Object.assign(Object.assign({}, formArgs), args);
+                        }
+                        else {
+                            return sendError(500, undefined, 'Boundary not found');
+                        }
                     }
                 }
                 try {
@@ -208,12 +239,16 @@ class WebServer {
                 }
             });
             if (ctx.contentLength > 0) {
+                let chunk = Buffer.alloc(0);
                 req.on('data', (d) => __awaiter(this, void 0, void 0, function* () {
-                    sas(d);
+                    chunk = Buffer.concat([chunk, d]);
                 }));
+                req.on('end', () => {
+                    sas(chunk);
+                });
             }
             else {
-                sas('{}');
+                sas(Buffer.from('{}'));
             }
         });
         const server = Http.createServer(requestListener);

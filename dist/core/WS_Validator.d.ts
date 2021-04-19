@@ -19,5 +19,5 @@ export declare class WS_Validator {
     }, type: string): void;
     static isMatch(kv: {
         [x: string]: any;
-    }, values: string[]): void;
+    }, values: (string | number)[]): void;
 }

@@ -1,5 +1,6 @@
 import * as Http from 'http';
 import * as Fs from 'fs';
+import * as Multipart from 'parse-multipart-data';
 import { IncomingMessage, ServerResponse } from 'http';
 import { WS_Router } from './core/WS_Router';
 import { WS_Context } from './core/WS_Context';
@@ -127,18 +128,53 @@ export class WebServer {
         }
       };
 
-      const sas = async (data: string) => {
+      const sas = async (data: Buffer) => {
         let args = this.parseQueryParams(url);
 
-        if (req.headers['content-type'] && req.headers['content-type'].match('application/json')) {
-          try {
-            args = {
-              ...JSON.parse(data.toString()),
-              ...args,
-            };
-          } catch (e) {
-            sendError(500, e);
-            return;
+        if (req.headers['content-type']) {
+          // JSON
+          if (req.headers['content-type'].match('application/json')) {
+            try {
+              args = {
+                ...JSON.parse(data.toString('utf-8')),
+                ...args,
+              };
+            } catch (e) {
+              return sendError(500, e);
+            }
+          }
+
+          // Multipart form
+          if (
+            req.headers['content-type'] &&
+            req.headers['content-type'].match(/^multipart\/form-data;/)
+          ) {
+            const boundary = req.headers['content-type'].split('; ').pop()?.trim() || '';
+
+            if (boundary) {
+              const parts = Multipart.parse(data, boundary.split('=').pop() || '');
+              const formArgs = {} as any;
+              for (let i = 0; i < parts.length; i++) {
+                if (parts[i].filename) {
+                  formArgs['files'] = formArgs['files'] || [];
+                  formArgs['files'].push({
+                    name: parts[i].filename,
+                    type: parts[i].type,
+                    data: parts[i].data,
+                    size: parts[i].data.length,
+                  });
+                } else if (parts[i].name) {
+                  formArgs[parts[i].name as string] = parts[i].data.toString('utf-8');
+                }
+              }
+
+              args = {
+                ...formArgs,
+                ...args,
+              };
+            } else {
+              return sendError(500, undefined, 'Boundary not found');
+            }
           }
         }
 
@@ -203,11 +239,15 @@ export class WebServer {
       };
 
       if (ctx.contentLength > 0) {
+        let chunk: Buffer = Buffer.alloc(0);
         req.on('data', async (d) => {
-          sas(d);
+          chunk = Buffer.concat([chunk, d]);
+        });
+        req.on('end', () => {
+          sas(chunk);
         });
       } else {
-        sas('{}');
+        sas(Buffer.from('{}'));
       }
     };
 

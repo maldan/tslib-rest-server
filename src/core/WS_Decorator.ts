@@ -7,6 +7,7 @@ type ConfigParams = {
   isInteger?: string[];
   isNumber?: string[];
   isPositive?: string[];
+  isMatch?: { [x: string]: (string | number)[] };
 };
 
 const extractFields = (obj: Record<string, unknown>, fields: string[]) => {
@@ -23,6 +24,7 @@ export function Config({
   isPositive = [],
   isInteger = [],
   isNumber = [],
+  isMatch = {},
 }: ConfigParams) {
   return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor): void {
     const originalMethod = descriptor.value;
@@ -40,6 +42,22 @@ export function Config({
       WS_Validator.isPositive(extractFields(requestArgs, isPositive));
       WS_Validator.isInteger(extractFields(requestArgs, isInteger));
       WS_Validator.isNumber(extractFields(requestArgs, isNumber));
+
+      // Check matching
+      for (const key in isMatch) {
+        WS_Validator.isMatch({ [key]: requestArgs[key] }, isMatch[key]);
+      }
+
+      // Convert number to number
+      for (const key of isPositive) {
+        requestArgs[key] = Number.parseFloat(requestArgs[key] as string);
+      }
+      for (const key of isNumber) {
+        requestArgs[key] = Number.parseFloat(requestArgs[key] as string);
+      }
+      for (const key of isInteger) {
+        requestArgs[key] = Number.parseInt(requestArgs[key] as string);
+      }
 
       console.log('wrapped function: before invoking ' + propertyKey);
       const result = originalMethod.apply(this, args);

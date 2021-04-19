@@ -68,7 +68,7 @@ export class WS_Validator {
     }
   }
 
-  static isMatch(kv: { [x: string]: any }, values: string[]): void {
+  static isMatch(kv: { [x: string]: any }, values: (string | number)[]): void {
     for (const key in kv) {
       const arg = kv[key];
 
