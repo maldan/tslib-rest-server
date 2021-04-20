@@ -8,6 +8,7 @@ type ConfigParams = {
   isNumber?: string[];
   isPositive?: string[];
   isMatch?: { [x: string]: (string | number)[] };
+  isValid?: { [x: string]: string };
 };
 
 const extractFields = (obj: Record<string, unknown>, fields: string[]) => {
@@ -25,6 +26,7 @@ export function Config({
   isInteger = [],
   isNumber = [],
   isMatch = {},
+  isValid = {},
 }: ConfigParams) {
   return function (_target: unknown, propertyKey: string, descriptor: PropertyDescriptor): void {
     const originalMethod = descriptor.value;
@@ -46,6 +48,11 @@ export function Config({
       // Check matching
       for (const key in isMatch) {
         WS_Validator.isMatch({ [key]: requestArgs[key] }, isMatch[key]);
+      }
+
+      // Check valid
+      for (const key in isValid) {
+        WS_Validator.isValid({ [key]: requestArgs[key] }, isValid[key]);
       }
 
       // Convert number to number

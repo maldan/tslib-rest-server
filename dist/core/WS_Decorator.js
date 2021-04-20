@@ -9,7 +9,7 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-function Config({ useJsonWrapper = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, }) {
+function Config({ useJsonWrapper = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, }) {
     return function (_target, propertyKey, descriptor) {
         const originalMethod = descriptor.value;
         descriptor.value = function (...args) {
@@ -26,6 +26,10 @@ function Config({ useJsonWrapper = false, isNotEmpty = [], isPositive = [], isIn
             // Check matching
             for (const key in isMatch) {
                 WS_Validator_1.WS_Validator.isMatch({ [key]: requestArgs[key] }, isMatch[key]);
+            }
+            // Check valid
+            for (const key in isValid) {
+                WS_Validator_1.WS_Validator.isValid({ [key]: requestArgs[key] }, isValid[key]);
             }
             // Convert number to number
             for (const key of isPositive) {

@@ -66,6 +66,20 @@ export class WS_Validator {
         }
       }
     }
+
+    if (type === 'date') {
+      for (const key in kv) {
+        const arg = kv[key];
+
+        if (new Date(arg).toString() === 'Invalid Date') {
+          throw new WS_Error(
+            'invalid',
+            key,
+            `Field "${key}" must contain a valid (YYYY-MM-DD) date!`,
+          );
+        }
+      }
+    }
   }
 
   static isMatch(kv: { [x: string]: any }, values: (string | number)[]): void {
