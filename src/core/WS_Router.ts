@@ -1,14 +1,8 @@
-import * as Fs from 'fs';
-import * as Util from 'util';
-import * as Path from 'path';
-import * as Mime from 'mime';
+import * as Fs from 'fs-extra';
 import { FileHandler } from '../file/FileHandler';
 import StringHelper from '../util/StringHelper';
 import { WS_Controller } from './WS_Controller';
 import { WS_Context } from './WS_Context';
-
-const ReadFile = Util.promisify(Fs.readFile);
-const Exists = Util.promisify(Fs.exists);
 
 export class WS_Router {
   public readonly prefix: string = '';
@@ -33,7 +27,7 @@ export class WS_Router {
       path += 'index.html';
     }
     for (let i = 0; i < this._folders.length; i++) {
-      if (await Exists(this._folders[i] + path)) {
+      if (await Fs.pathExists(this._folders[i] + path)) {
         return this._folders[i] + path;
       }
     }

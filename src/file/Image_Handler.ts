@@ -2,10 +2,8 @@ import { IFileHandler } from './IFileHandler';
 import * as Path from 'path';
 import * as Mime from 'mime';
 import * as Util from 'util';
-import * as Fs from 'fs';
+import * as Fs from 'fs-extra';
 import { WS_Context } from '../core/WS_Context';
-
-const ReadFile = Util.promisify(Fs.readFile);
 
 export class Image_Handler implements IFileHandler {
   private _cache: { [key: string]: unknown } = {};
@@ -22,6 +20,6 @@ export class Image_Handler implements IFileHandler {
     // const cachePath = path + JSON.stringify(args);
     ctx.contentType = Mime.getType(extension) || 'text/plain';
 
-    return await ReadFile(path);
+    return await Fs.readFile(path);
   }
 }

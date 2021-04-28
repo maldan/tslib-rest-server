@@ -108,6 +108,7 @@ class WebServer {
                 return;
             }
             const sendError = (status, e, message = '') => {
+                console.error('err', e, 'msg', message);
                 if (!e) {
                     ctx.contentType = 'application/json';
                     ctx.status = status;

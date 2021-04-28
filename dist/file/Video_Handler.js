@@ -30,10 +30,8 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Video_Handler = void 0;
 const Path = __importStar(require("path"));
-const Util = __importStar(require("util"));
-const Fs = __importStar(require("fs"));
+const Fs = __importStar(require("fs-extra"));
 const Mime = __importStar(require("mime"));
-const Stat = Util.promisify(Fs.stat);
 class Video_Handler {
     constructor() {
         this._cache = {};
@@ -56,14 +54,14 @@ class Video_Handler {
             ctx.status = 206;
             ctx.acceptRanges = 'bytes';
             if (ctx.range) {
-                const fileInfo = yield Stat(path);
+                const fileInfo = yield Fs.stat(path);
                 const start = ctx.range[0];
                 const end = (_a = ctx.range[1]) !== null && _a !== void 0 ? _a : fileInfo.size - 1;
                 ctx.contentRange = `bytes ${start}-${end}/${fileInfo.size}`;
                 return Fs.createReadStream(path, { start, end });
             }
             else {
-                const fileInfo = yield Stat(path);
+                const fileInfo = yield Fs.stat(path);
                 ctx.contentRange = `${0}-${fileInfo.size - 1}/${fileInfo.size}`;
                 return Buffer.from([]);
             }

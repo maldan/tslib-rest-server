@@ -31,9 +31,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Image_Handler = void 0;
 const Path = __importStar(require("path"));
 const Mime = __importStar(require("mime"));
-const Util = __importStar(require("util"));
-const Fs = __importStar(require("fs"));
-const ReadFile = Util.promisify(Fs.readFile);
+const Fs = __importStar(require("fs-extra"));
 class Image_Handler {
     constructor() {
         this._cache = {};
@@ -49,7 +47,7 @@ class Image_Handler {
             // const thumbnail = args['thumbnail'];
             // const cachePath = path + JSON.stringify(args);
             ctx.contentType = Mime.getType(extension) || 'text/plain';
-            return yield ReadFile(path);
+            return yield Fs.readFile(path);
         });
     }
 }

@@ -32,13 +32,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WS_Router = void 0;
-const Fs = __importStar(require("fs"));
-const Util = __importStar(require("util"));
+const Fs = __importStar(require("fs-extra"));
 const FileHandler_1 = require("../file/FileHandler");
 const StringHelper_1 = __importDefault(require("../util/StringHelper"));
 const WS_Controller_1 = require("./WS_Controller");
-const ReadFile = Util.promisify(Fs.readFile);
-const Exists = Util.promisify(Fs.exists);
 class WS_Router {
     constructor(prefix = '', classes = [], folders = []) {
         this.prefix = '';
@@ -59,7 +56,7 @@ class WS_Router {
                 path += 'index.html';
             }
             for (let i = 0; i < this._folders.length; i++) {
-                if (yield Exists(this._folders[i] + path)) {
+                if (yield Fs.pathExists(this._folders[i] + path)) {
                     return this._folders[i] + path;
                 }
             }

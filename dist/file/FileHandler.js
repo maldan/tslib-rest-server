@@ -32,10 +32,8 @@ exports.FileHandler = void 0;
 const Image_Handler_1 = require("./Image_Handler");
 const Path = __importStar(require("path"));
 const Mime = __importStar(require("mime"));
-const Util = __importStar(require("util"));
-const Fs = __importStar(require("fs"));
+const Fs = __importStar(require("fs-extra"));
 const Video_Handler_1 = require("./Video_Handler");
-const ReadFile = Util.promisify(Fs.readFile);
 class FileHandler {
     constructor() {
         this._handlers = [new Image_Handler_1.Image_Handler(), new Video_Handler_1.Video_Handler()];
@@ -55,7 +53,7 @@ class FileHandler {
             // Default return
             const extension = Path.extname(path);
             ctx.contentType = Mime.getType(extension) || 'text/plain';
-            return yield ReadFile(path);
+            return yield Fs.readFile(path);
         });
     }
 }

@@ -90,6 +90,8 @@ export class WebServer {
       }
 
       const sendError = (status: number, e?: Error, message: string = '') => {
+        console.error('err', e, 'msg', message);
+
         if (!e) {
           ctx.contentType = 'application/json';
           ctx.status = status;
@@ -102,6 +104,7 @@ export class WebServer {
           );
           return;
         }
+
         if (e instanceof WS_Error) {
           ctx.contentType = 'application/json';
           ctx.status = e.code;
