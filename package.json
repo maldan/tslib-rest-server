@@ -1,6 +1,6 @@
 {
   "name": "@maldan/tslib-rest-server",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Web Server for Rest API",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
