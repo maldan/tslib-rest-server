@@ -17,7 +17,7 @@ export class FileHandler {
     args: { [key: string]: unknown },
   ): Promise<Buffer | ReadStream> {
     /*if (path[path.length - 1] === '/') {
-            path += 'index.html';
+            path += 'index.html'; 
         }*/
 
     // Check handlers
