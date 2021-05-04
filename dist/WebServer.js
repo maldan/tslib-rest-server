@@ -35,12 +35,16 @@ const Multipart = __importStar(require("parse-multipart-data"));
 const WS_Router_1 = require("./core/WS_Router");
 const WS_Context_1 = require("./core/WS_Context");
 const WS_Error_1 = require("./error/WS_Error");
+const DocumentationGenerator_1 = require("./util/DocumentationGenerator");
 class WebServer {
     constructor(routers = []) {
         this._wr = [];
         for (let i = 0; i < routers.length; i++) {
             this.registerRouter(routers[i]);
         }
+        // Init docs and generate
+        Fs.mkdirSync(WebServer.docsRoot, { recursive: true });
+        DocumentationGenerator_1.DocumentationGenerator.generate();
     }
     registerRouter(wr) {
         this._wr.push(wr);
@@ -56,15 +60,15 @@ class WebServer {
             queryParams.map((x) => {
                 const c = x.split('=');
                 out[c[0]] = decodeURI(c[1]);
-                if (out[c[0]].match(/^\d+$/g)) {
-                    out[c[0]] = parseFloat(out[c[0]]);
+                /*if (out[c[0]].match(/^\d+$/g)) {
+                  out[c[0]] = parseFloat(out[c[0]]);
                 }
                 if (out[c[0]] === 'true') {
-                    out[c[0]] = true;
+                  out[c[0]] = true;
                 }
                 if (out[c[0]] === 'false') {
-                    out[c[0]] = false;
-                }
+                  out[c[0]] = false;
+                }*/
                 return null;
             });
             return out;
@@ -108,14 +112,13 @@ class WebServer {
                 return;
             }
             const sendError = (status, e, message = '') => {
-                console.error('err', e, 'msg', message);
                 if (!e) {
                     ctx.contentType = 'application/json';
                     ctx.status = status;
                     res.writeHead(ctx.status, ctx.headers);
                     res.end(JSON.stringify({
                         status: false,
-                        description: message,
+                        description: message || 'Uknown error',
                     }));
                     return;
                 }
@@ -127,7 +130,7 @@ class WebServer {
                         status: false,
                         type: e.type,
                         value: e.value,
-                        description: e.description,
+                        description: e.description || 'Uknown error',
                     }));
                 }
                 else {
@@ -136,7 +139,7 @@ class WebServer {
                     res.writeHead(ctx.status, ctx.headers);
                     res.end(JSON.stringify({
                         status: false,
-                        description: e.message,
+                        description: e.message || 'Uknown error',
                         stack: e.stack,
                     }));
                 }
@@ -257,3 +260,5 @@ class WebServer {
     }
 }
 exports.WebServer = WebServer;
+WebServer.docsRoot = './docs';
+WebServer.docsDescription = '';

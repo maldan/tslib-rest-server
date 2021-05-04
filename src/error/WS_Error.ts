@@ -7,13 +7,13 @@ export class WS_Error extends Error {
   constructor(type: string, value: string, description: string, code: number = 500) {
     super(description);
 
-    this.type = type;
-    this.value = value;
-    this.description = description;
-    this.code = code;
+    this.type = type || '';
+    this.value = value || '';
+    this.description = description || '';
+    this.code = code || 500;
   }
 
-  toJSON() {
+  toJSON(): unknown {
     return {
       type: this.type,
       value: this.value,
@@ -21,3 +21,14 @@ export class WS_Error extends Error {
     };
   }
 }
+
+export const ErrorType = {
+  EMPTY_FIELD: 'emptyField',
+  TYPE_MISMATCH: 'typeMismatch',
+  VALUE_MISMATCH: 'valueMismatch',
+  OUT_OF_RANGE: 'outOfRange',
+  INVALID: 'invalid',
+  ACCESS_DENIED: 'accessDenied',
+  NOT_FOUND: 'notFound',
+  EXTERNAL_API: 'externalApi',
+};

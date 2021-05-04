@@ -5,14 +5,21 @@ import { IncomingMessage, ServerResponse } from 'http';
 import { WS_Router } from './core/WS_Router';
 import { WS_Context } from './core/WS_Context';
 import { WS_Error } from './error/WS_Error';
+import { DocumentationGenerator } from './util/DocumentationGenerator';
 
 export class WebServer {
   private _wr: WS_Router[] = [];
+  static docsRoot: string = './docs';
+  static docsDescription: string = '';
 
   constructor(routers: WS_Router[] = []) {
     for (let i = 0; i < routers.length; i++) {
       this.registerRouter(routers[i]);
     }
+
+    // Init docs and generate
+    Fs.mkdirSync(WebServer.docsRoot, { recursive: true });
+    DocumentationGenerator.generate();
   }
 
   public registerRouter(wr: WS_Router): void {
@@ -31,7 +38,7 @@ export class WebServer {
       queryParams.map((x: any) => {
         const c = x.split('=');
         out[c[0]] = decodeURI(c[1]);
-        if (out[c[0]].match(/^\d+$/g)) {
+        /*if (out[c[0]].match(/^\d+$/g)) {
           out[c[0]] = parseFloat(out[c[0]]);
         }
         if (out[c[0]] === 'true') {
@@ -39,7 +46,7 @@ export class WebServer {
         }
         if (out[c[0]] === 'false') {
           out[c[0]] = false;
-        }
+        }*/
 
         return null;
       });
@@ -90,8 +97,6 @@ export class WebServer {
       }
 
       const sendError = (status: number, e?: Error, message: string = '') => {
-        console.error('err', e, 'msg', message);
-
         if (!e) {
           ctx.contentType = 'application/json';
           ctx.status = status;
@@ -99,7 +104,7 @@ export class WebServer {
           res.end(
             JSON.stringify({
               status: false,
-              description: message,
+              description: message || 'Uknown error',
             }),
           );
           return;
@@ -114,7 +119,7 @@ export class WebServer {
               status: false,
               type: e.type,
               value: e.value,
-              description: e.description,
+              description: e.description || 'Uknown error',
             }),
           );
         } else {
@@ -124,7 +129,7 @@ export class WebServer {
           res.end(
             JSON.stringify({
               status: false,
-              description: e.message,
+              description: e.message || 'Uknown error',
               stack: e.stack,
             }),
           );

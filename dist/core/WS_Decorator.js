@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Config = void 0;
+const WS_Error_1 = require("../error/WS_Error");
+const DocumentationGenerator_1 = require("../util/DocumentationGenerator");
 const WS_Validator_1 = require("./WS_Validator");
 const extractFields = (obj, fields) => {
     const out = {};
@@ -9,14 +11,51 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-function Config({ useJsonWrapper = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, }) {
-    return function (_target, propertyKey, descriptor) {
+function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, description = '', examples = [], struct = {}, }) {
+    return function (target, propertyKey, descriptor) {
+        // Generate documentation
+        DocumentationGenerator_1.DocumentationGenerator.add({
+            className: target.path,
+            method: propertyKey.split('_')[0],
+            functionName: propertyKey.split('_').pop() || '',
+            isRequiresAuthorization,
+            isReturnAccessToken,
+            useJsonWrapper,
+            description,
+            examples,
+            isNotEmpty,
+            isPositive,
+            isInteger,
+            isNumber,
+            isMatch,
+            isValid,
+            struct,
+        });
         const originalMethod = descriptor.value;
         descriptor.value = function (...args) {
             const requestArgs = args[0];
             // Use wrapper json
             if (requestArgs.ctx && useJsonWrapper) {
                 requestArgs.ctx.useJsonWrapper = useJsonWrapper;
+            }
+            // Fill from struct
+            for (const key in struct) {
+                if (struct[key] === 'string') {
+                    isNotEmpty.push(key);
+                }
+                if (struct[key] === 'number') {
+                    isNumber.push(key);
+                }
+                if (struct[key] === 'email') {
+                    isValid[key] = 'email';
+                }
+                if (struct[key] === 'date') {
+                    isValid[key] = 'date';
+                }
+            }
+            // Check auth
+            if (isRequiresAuthorization && !requestArgs.accessToken) {
+                throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.ACCESS_DENIED, 'accessToken', 'Method requires Authorization header');
             }
             // Check empty fields
             WS_Validator_1.WS_Validator.isNotEmpty(extractFields(requestArgs, isNotEmpty));
@@ -41,9 +80,9 @@ function Config({ useJsonWrapper = false, isNotEmpty = [], isPositive = [], isIn
             for (const key of isInteger) {
                 requestArgs[key] = Number.parseInt(requestArgs[key]);
             }
-            console.log('wrapped function: before invoking ' + propertyKey);
+            // console.log('wrapped function: before invoking ' + propertyKey);
             const result = originalMethod.apply(this, args);
-            console.log('wrapped function: after invoking ' + propertyKey);
+            // console.log('wrapped function: after invoking ' + propertyKey);
             return result;
         };
     };
