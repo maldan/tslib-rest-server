@@ -1,3 +1,11 @@
+## [2.2.0] - 2021-04-04
+
+### Added
+-    Documentation generator
+-    Std errors
+-    new params in decorator, such as description, struct...
+-    Minor fix
+
 ## [2.1.1] - 2021-03-29
 
 ### Fixed
