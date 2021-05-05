@@ -42,6 +42,7 @@ class WebServer {
         for (let i = 0; i < routers.length; i++) {
             this.registerRouter(routers[i]);
         }
+        // Init docs and generate
         Fs.mkdirSync(WebServer.docsRoot, { recursive: true });
         DocumentationGenerator_1.DocumentationGenerator.generate();
     }
@@ -59,12 +60,41 @@ class WebServer {
             queryParams.map((x) => {
                 const c = x.split('=');
                 out[c[0]] = decodeURI(c[1]);
+                /*if (out[c[0]].match(/^\d+$/g)) {
+                  out[c[0]] = parseFloat(out[c[0]]);
+                }
+                if (out[c[0]] === 'true') {
+                  out[c[0]] = true;
+                }
+                if (out[c[0]] === 'false') {
+                  out[c[0]] = false;
+                }*/
                 return null;
             });
             return out;
         }
         return {};
     }
+    /*public parseErrorMessage(ctx: WS_Context, msg: string): any {
+          const m = msg.match(/^\[(.*?)] /);
+          if (m) {
+              msg = msg.replace(/^\[.*?] /, '');
+  
+              if (m[1]) {
+                  const tuple = m[1].split(':');
+                  let code: any = tuple[0];
+                  code = code.replace("error", "500");
+                  code = Number(code);
+  
+                  ctx.status = code;
+  
+                  const format = tuple[1] || 'string';
+                  if (format === 'json') return JSON.parse(msg);
+                  return msg;
+              }
+          }
+          return msg;
+      }*/
     listen(port) {
         const requestListener = (req, res) => __awaiter(this, void 0, void 0, function* () {
             if (!req.url) {
@@ -72,6 +102,7 @@ class WebServer {
             }
             const url = req.url || '';
             const ctx = new WS_Context_1.WS_Context(req, res);
+            // Disable cors by default
             ctx.headers['access-control-allow-origin'] = '*';
             ctx.headers['access-control-allow-methods'] = '*';
             ctx.headers['access-control-allow-headers'] = '*';
@@ -117,6 +148,7 @@ class WebServer {
                 var _a;
                 let args = this.parseQueryParams(url);
                 if (req.headers['content-type']) {
+                    // JSON
                     if (req.headers['content-type'].match('application/json')) {
                         try {
                             args = Object.assign(Object.assign({}, JSON.parse(data.toString('utf-8'))), args);
@@ -125,6 +157,7 @@ class WebServer {
                             return sendError(500, e);
                         }
                     }
+                    // Multipart form
                     if (req.headers['content-type'] &&
                         req.headers['content-type'].match(/^multipart\/form-data;/)) {
                         const boundary = ((_a = req.headers['content-type'].split('; ').pop()) === null || _a === void 0 ? void 0 : _a.trim()) || '';

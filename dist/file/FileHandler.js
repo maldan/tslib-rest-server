@@ -40,11 +40,17 @@ class FileHandler {
     }
     handle(ctx, path, args) {
         return __awaiter(this, void 0, void 0, function* () {
+            /*if (path[path.length - 1] === '/') {
+                    path += 'index.html';
+                }*/
+            // Check handlers
             for (let i = 0; i < this._handlers.length; i++) {
                 if (this._handlers[i].match(path)) {
                     return yield this._handlers[i].handle(ctx, path, args);
                 }
             }
+            // console.log(path);
+            // Default return
             const extension = Path.extname(path);
             ctx.contentType = Mime.getType(extension) || 'text/plain';
             return yield Fs.readFile(path);

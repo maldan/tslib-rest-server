@@ -43,6 +43,9 @@ class Image_Handler {
     handle(ctx, path, args) {
         return __awaiter(this, void 0, void 0, function* () {
             const extension = Path.extname(path);
+            // const quality = Number.parseInt(args['quality'] as string);
+            // const thumbnail = args['thumbnail'];
+            // const cachePath = path + JSON.stringify(args);
             ctx.contentType = Mime.getType(extension) || 'text/plain';
             return yield Fs.readFile(path);
         });

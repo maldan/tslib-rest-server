@@ -50,8 +50,19 @@ class WS_Controller {
             if (fn.httpMethod !== ctx.method) {
                 throw new Error(`[405] Method not allowed!`);
             }
+            // this._sc['context'] = ctx;
+            // this._functionList[fnName].function['sas'] = 1;
             const binded = this._functionList[fnName].function.bind(this._sc, Object.assign(Object.assign({}, args), { ctx, accessToken: ctx.authorization }));
             return yield binded();
+            /*return await FunctionHelper.callFunctionWithArgumentNames(
+              this._functionList[fnName].function,
+              {
+                ...args,
+                ctx,
+                authorization: ctx.authorization,
+              },
+              this._sc,
+            );*/
         });
     }
 }

@@ -17,6 +17,7 @@ class WS_Context {
         this.headers = {
             'content-type': 'text/plain',
         };
+        // If true, then "test" -> { status: true, response: "test" }
         this.useJsonWrapper = false;
         this._req = req;
         this._res = res;
