@@ -347,8 +347,13 @@ class DocumentationGenerator {
           if (typeof json === "string") {
             localStorage.setItem('testApi_accessToken', json);
           } else {
-            localStorage.setItem('testApi_accessToken', json.response);
+            if (typeof json.response === "string") {
+              localStorage.setItem('testApi_accessToken', json.response);
+            } else {
+              localStorage.setItem('testApi_accessToken', json.response.accessToken);
+            }
           }
+
         }
         document.querySelector('#result-' + id).innerHTML = buildJson(JSON.stringify(json, null, 4));
       }
