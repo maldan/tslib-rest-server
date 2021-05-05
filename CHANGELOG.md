@@ -1,3 +1,9 @@
+## [2.4.0] - 2021-04-05
+
+### Added
+-    File field
+-    Put patch methods
+
 ## [2.3.3] - 2021-04-05
 
 ### Fixed
