@@ -73,6 +73,9 @@ function buildForm(struct: any, id: number): string {
     if (struct[key] === 'email') {
       type = 'email';
     }
+    if (struct[key] === 'file') {
+      type = 'file';
+    }
     out += `<input name=${key} type="${type}" placeholder="${key}">`;
   }
   out += `</form>`;
@@ -338,15 +341,23 @@ export class DocumentationGenerator {
       ${buildJson.toString()}
 
       async function makeQuery(path, method, data, id, isReturnAccessToken) {
-        const queryString = method.toUpperCase() === 'POST' ?'' :Object.keys(data).map(key => key + '=' + data[key]).join('&');
+        const hasBody = (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PUT');
+        const queryString = hasBody ?'' :Object.keys(data).map(key => key + '=' + data[key]).join('&');
+        let bodyData = undefined;
+        if (method.toUpperCase() === 'POST') bodyData = JSON.stringify(data);
+        if (method.toUpperCase() === 'PUT') bodyData = data;
+        
+        const headers = {
+          'Authorization': localStorage.getItem('testApi_accessToken'),
+          'Content-Type': 'application/json'
+        };
+
+        if ( method.toUpperCase() === 'PUT') delete headers['Content-Type'];
 
         const response = await fetch(window.location.origin + path + '?' + queryString, {
           method,
-          headers: {
-            'Authorization': localStorage.getItem('testApi_accessToken'),
-            'Content-Type': 'application/json'
-          },
-          body: method.toUpperCase() === 'POST' ?JSON.stringify(data) :undefined
+          headers,
+          body: bodyData
         });
         const json = await response.json();
         if (isReturnAccessToken) {
@@ -364,14 +375,18 @@ export class DocumentationGenerator {
         const path = x.getAttribute('data-path');
         const method = x.getAttribute('data-method');
         const isReturnAccessToken = x.getAttribute('data-is-return-access-token') === 'true';
-
+       
         x.addEventListener('click', (e) => {
           const input = document.querySelectorAll('#form-' + id + ' > input');
           const formData = {};
+          const formData_real = new FormData();
           input.forEach(y => {
+            const type = y.getAttribute('type');
             formData[y.getAttribute('name')] = y.value;
+            formData_real.append(y.getAttribute('name'), type === 'file' ?y.files[0] :y.value);
           });
-          makeQuery(path, method, formData, id, isReturnAccessToken);
+
+          makeQuery(path, method, method.toUpperCase() === 'PUT' ?formData_real :formData, id, isReturnAccessToken);
         });
       });
 

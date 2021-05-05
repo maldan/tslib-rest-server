@@ -33,6 +33,20 @@ export class WS_Controller {
           function: this._sc[methodList[i]],
         };
       }
+
+      if (methodList[i].match(/^put_/)) {
+        this._functionList[StringHelper.camelToKebab(methodList[i])] = {
+          httpMethod: 'PUT',
+          function: this._sc[methodList[i]],
+        };
+      }
+
+      if (methodList[i].match(/^patch_/)) {
+        this._functionList[StringHelper.camelToKebab(methodList[i])] = {
+          httpMethod: 'PATCH',
+          function: this._sc[methodList[i]],
+        };
+      }
     }
   }
 
