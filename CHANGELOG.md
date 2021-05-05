@@ -1,3 +1,9 @@
+## [2.3.0] - 2021-04-05
+
+### Added
+-    ContentType config
+-    EJS Template Engine
+
 ## [2.2.0] - 2021-04-04
 
 ### Added
