@@ -46,10 +46,6 @@ class Video_Handler {
             const extension = Path.extname(path);
             const thumbnail = args['thumbnail'];
             const cachePath = path + JSON.stringify(args);
-            /*if (this._cache[cachePath]) {
-              ctx.contentType = 'image/jpeg';
-              return this._cache[cachePath];
-            }*/
             ctx.contentType = Mime.getType(extension) || 'text/plain';
             ctx.status = 206;
             ctx.acceptRanges = 'bytes';
