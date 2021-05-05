@@ -19,6 +19,7 @@ export type ConfigParams = {
     response: string | null | number | boolean | Record<string, unknown> | WS_Error;
   }[];
   struct?: Record<string, string>;
+  contentType?: string;
 };
 
 const extractFields = (obj: Record<string, unknown>, fields: string[]) => {
@@ -42,6 +43,7 @@ export function Config({
   description = '',
   examples = [],
   struct = {},
+  contentType = undefined,
 }: ConfigParams) {
   return function (
     target: { path: string },
@@ -74,6 +76,9 @@ export function Config({
       // Use wrapper json
       if (requestArgs.ctx && useJsonWrapper) {
         (requestArgs.ctx as WS_Context).useJsonWrapper = useJsonWrapper;
+      }
+      if (requestArgs.ctx && contentType) {
+        (requestArgs.ctx as WS_Context).contentType = contentType;
       }
 
       // Fill from struct

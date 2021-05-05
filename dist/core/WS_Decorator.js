@@ -11,7 +11,7 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, description = '', examples = [], struct = {}, }) {
+function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, description = '', examples = [], struct = {}, contentType = undefined, }) {
     return function (target, propertyKey, descriptor) {
         // Generate documentation
         DocumentationGenerator_1.DocumentationGenerator.add({
@@ -37,6 +37,9 @@ function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isRet
             // Use wrapper json
             if (requestArgs.ctx && useJsonWrapper) {
                 requestArgs.ctx.useJsonWrapper = useJsonWrapper;
+            }
+            if (requestArgs.ctx && contentType) {
+                requestArgs.ctx.contentType = contentType;
             }
             // Fill from struct
             for (const key in struct) {

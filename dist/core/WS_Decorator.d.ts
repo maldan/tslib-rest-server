@@ -19,7 +19,8 @@ export declare type ConfigParams = {
         response: string | null | number | boolean | Record<string, unknown> | WS_Error;
     }[];
     struct?: Record<string, string>;
+    contentType?: string;
 };
-export declare function Config({ useJsonWrapper, isRequiresAuthorization, isReturnAccessToken, isNotEmpty, isPositive, isInteger, isNumber, isMatch, isValid, description, examples, struct, }: ConfigParams): (target: {
+export declare function Config({ useJsonWrapper, isRequiresAuthorization, isReturnAccessToken, isNotEmpty, isPositive, isInteger, isNumber, isMatch, isValid, description, examples, struct, contentType, }: ConfigParams): (target: {
     path: string;
 }, propertyKey: string, descriptor: PropertyDescriptor) => void;
