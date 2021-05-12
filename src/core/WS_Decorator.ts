@@ -7,12 +7,12 @@ export type ConfigParams = {
   useJsonWrapper?: boolean;
   isRequiresAuthorization?: boolean;
   isReturnAccessToken?: boolean;
-  isNotEmpty?: string[];
-  isInteger?: string[];
-  isNumber?: string[];
-  isPositive?: string[];
-  isMatch?: { [x: string]: (string | number)[] };
-  isValid?: { [x: string]: string };
+  // isNotEmpty?: string[];
+  // isInteger?: string[];
+  // isNumber?: string[];
+  // isPositive?: string[];
+  // isMatch?: { [x: string]: (string | number)[] };
+  // isValid?: { [x: string]: string };
   description?: string;
   examples?: {
     request: Record<string, unknown>;
@@ -34,12 +34,12 @@ export function Config({
   useJsonWrapper = false,
   isRequiresAuthorization = false,
   isReturnAccessToken = false,
-  isNotEmpty = [],
-  isPositive = [],
-  isInteger = [],
-  isNumber = [],
-  isMatch = {},
-  isValid = {},
+  // isNotEmpty = [],
+  // isPositive = [],
+  // isInteger = [],
+  // isNumber = [],
+  // isMatch = {},
+  // isValid = {},
   description = '',
   examples = [],
   struct = {},
@@ -60,18 +60,24 @@ export function Config({
       useJsonWrapper,
       description,
       examples,
-      isNotEmpty,
+      /*isNotEmpty,
       isPositive,
       isInteger,
       isNumber,
       isMatch,
-      isValid,
+      isValid,*/
       struct,
     });
 
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: unknown[]): unknown {
-      const requestArgs = args[0] as { [x: string]: unknown };
+      const requestArgs = args[0] as Record<string, unknown>;
+      const isNotEmpty = [] as string[];
+      const isPositive = [] as string[];
+      const isInteger = [] as string[];
+      const isNumber = [] as string[];
+      const isMatch: Record<string, (string | number)[]> = {};
+      const isValid: Record<string, string> = {};
 
       // Use wrapper json
       if (requestArgs.ctx && useJsonWrapper) {
@@ -83,17 +89,56 @@ export function Config({
 
       // Fill from struct
       for (const key in struct) {
+        // String params
         if (struct[key] === 'string') {
           isNotEmpty.push(key);
         }
+        if (struct[key] === 'string?') {
+          if (requestArgs[key]) {
+            isNotEmpty.push(key);
+          } else {
+            requestArgs[key] = '';
+          }
+        }
+
+        // Number params
         if (struct[key] === 'number') {
+          requestArgs[key] = Number(requestArgs[key]);
           isNumber.push(key);
         }
+        if (struct[key] === 'number?') {
+          if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+            requestArgs[key] = Number(requestArgs[key]);
+            isNumber.push(key);
+          } else {
+            requestArgs[key] = 0;
+          }
+        }
+
+        // Emails
         if (struct[key] === 'email') {
           isValid[key] = 'email';
         }
+        if (struct[key] === 'email?') {
+          if (requestArgs[key]) {
+            isValid[key] = 'email';
+          } else {
+            requestArgs[key] = '';
+          }
+        }
+
+        // Date
         if (struct[key] === 'date') {
+          requestArgs[key] = new Date(requestArgs[key] as string);
           isValid[key] = 'date';
+        }
+        if (struct[key] === 'date?') {
+          if (requestArgs[key]) {
+            requestArgs[key] = new Date(requestArgs[key] as string);
+            isValid[key] = 'date';
+          } else {
+            requestArgs[key] = null;
+          }
         }
       }
 

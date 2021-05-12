@@ -8,12 +8,6 @@ export declare type Type_DocumentStruct = {
     useJsonWrapper: boolean;
     description: string;
     examples: ConfigParams['examples'];
-    isNotEmpty: ConfigParams['isNotEmpty'];
-    isPositive: ConfigParams['isPositive'];
-    isInteger: ConfigParams['isInteger'];
-    isNumber: ConfigParams['isNumber'];
-    isMatch: ConfigParams['isMatch'];
-    isValid: ConfigParams['isValid'];
     struct: ConfigParams['struct'];
 };
 export declare class DocumentationGenerator {

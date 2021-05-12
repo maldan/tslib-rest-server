@@ -3,16 +3,6 @@ export declare type ConfigParams = {
     useJsonWrapper?: boolean;
     isRequiresAuthorization?: boolean;
     isReturnAccessToken?: boolean;
-    isNotEmpty?: string[];
-    isInteger?: string[];
-    isNumber?: string[];
-    isPositive?: string[];
-    isMatch?: {
-        [x: string]: (string | number)[];
-    };
-    isValid?: {
-        [x: string]: string;
-    };
     description?: string;
     examples?: {
         request: Record<string, unknown>;
@@ -21,6 +11,6 @@ export declare type ConfigParams = {
     struct?: Record<string, string>;
     contentType?: string;
 };
-export declare function Config({ useJsonWrapper, isRequiresAuthorization, isReturnAccessToken, isNotEmpty, isPositive, isInteger, isNumber, isMatch, isValid, description, examples, struct, contentType, }: ConfigParams): (target: {
+export declare function Config({ useJsonWrapper, isRequiresAuthorization, isReturnAccessToken, description, examples, struct, contentType, }: ConfigParams): (target: {
     path: string;
 }, propertyKey: string, descriptor: PropertyDescriptor) => void;

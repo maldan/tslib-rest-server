@@ -11,7 +11,14 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, isNotEmpty = [], isPositive = [], isInteger = [], isNumber = [], isMatch = {}, isValid = {}, description = '', examples = [], struct = {}, contentType = undefined, }) {
+function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, 
+// isNotEmpty = [],
+// isPositive = [],
+// isInteger = [],
+// isNumber = [],
+// isMatch = {},
+// isValid = {},
+description = '', examples = [], struct = {}, contentType = undefined, }) {
     return function (target, propertyKey, descriptor) {
         // Generate documentation
         DocumentationGenerator_1.DocumentationGenerator.add({
@@ -23,17 +30,23 @@ function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isRet
             useJsonWrapper,
             description,
             examples,
-            isNotEmpty,
+            /*isNotEmpty,
             isPositive,
             isInteger,
             isNumber,
             isMatch,
-            isValid,
+            isValid,*/
             struct,
         });
         const originalMethod = descriptor.value;
         descriptor.value = function (...args) {
             const requestArgs = args[0];
+            const isNotEmpty = [];
+            const isPositive = [];
+            const isInteger = [];
+            const isNumber = [];
+            const isMatch = {};
+            const isValid = {};
             // Use wrapper json
             if (requestArgs.ctx && useJsonWrapper) {
                 requestArgs.ctx.useJsonWrapper = useJsonWrapper;
@@ -43,17 +56,57 @@ function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isRet
             }
             // Fill from struct
             for (const key in struct) {
+                // String params
                 if (struct[key] === 'string') {
                     isNotEmpty.push(key);
                 }
+                if (struct[key] === 'string?') {
+                    if (requestArgs[key]) {
+                        isNotEmpty.push(key);
+                    }
+                    else {
+                        requestArgs[key] = '';
+                    }
+                }
+                // Number params
                 if (struct[key] === 'number') {
+                    requestArgs[key] = Number(requestArgs[key]);
                     isNumber.push(key);
                 }
+                if (struct[key] === 'number?') {
+                    if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+                        requestArgs[key] = Number(requestArgs[key]);
+                        isNumber.push(key);
+                    }
+                    else {
+                        requestArgs[key] = 0;
+                    }
+                }
+                // Emails
                 if (struct[key] === 'email') {
                     isValid[key] = 'email';
                 }
+                if (struct[key] === 'email?') {
+                    if (requestArgs[key]) {
+                        isValid[key] = 'email';
+                    }
+                    else {
+                        requestArgs[key] = '';
+                    }
+                }
+                // Date
                 if (struct[key] === 'date') {
+                    requestArgs[key] = new Date(requestArgs[key]);
                     isValid[key] = 'date';
+                }
+                if (struct[key] === 'date?') {
+                    if (requestArgs[key]) {
+                        requestArgs[key] = new Date(requestArgs[key]);
+                        isValid[key] = 'date';
+                    }
+                    else {
+                        requestArgs[key] = null;
+                    }
                 }
             }
             // Check auth

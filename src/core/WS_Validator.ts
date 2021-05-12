@@ -71,6 +71,10 @@ export class WS_Validator {
       for (const key in kv) {
         const arg = kv[key];
 
+        if (arg instanceof Date) {
+          continue;
+        }
+
         if (new Date(arg).toString() === 'Invalid Date') {
           throw new WS_Error(
             'invalid',

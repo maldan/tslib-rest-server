@@ -12,12 +12,12 @@ export type Type_DocumentStruct = {
   useJsonWrapper: boolean;
   description: string;
   examples: ConfigParams['examples'];
-  isNotEmpty: ConfigParams['isNotEmpty'];
+  /*isNotEmpty: ConfigParams['isNotEmpty'];
   isPositive: ConfigParams['isPositive'];
   isInteger: ConfigParams['isInteger'];
   isNumber: ConfigParams['isNumber'];
   isMatch: ConfigParams['isMatch'];
-  isValid: ConfigParams['isValid'];
+  isValid: ConfigParams['isValid'];*/
   struct: ConfigParams['struct'];
 };
 
@@ -61,9 +61,13 @@ function buildResponse(useJsonWrapper: boolean, r: any): unknown {
 }
 
 function buildForm(struct: any, id: number): string {
+  struct = JSON.parse(JSON.stringify(struct));
+
   let out = `<form id="form-${id}">`;
   for (const key in struct) {
     let type = 'text';
+    struct[key] = struct[key].replace('?', '');
+
     if (struct[key] === 'number') {
       type = 'number';
     }
@@ -275,7 +279,9 @@ export class DocumentationGenerator {
 
     for (let i = 0; i < this._sas.length; i++) {
       const item = this._sas[i];
-      const path = `/api/${item.className}/${item.functionName}`;
+      const path = `/api/${item.className}/${
+        item.functionName === 'index' ? '' : item.functionName
+      }`;
 
       out += `
        <div class="api-call">
