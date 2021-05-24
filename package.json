@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "prepublish": "tsc"
+    "prepublish": "tsc",
+    "test": "mocha -r ts-node/register test/**/*.test.ts"
   },
   "keywords": [
     "Web Server",
@@ -20,16 +21,23 @@
     "url": "git+https://github.com/maldan/tslib-rest-server.git"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.16",
+    "@types/mocha": "^8.2.2",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "axios": "^0.21.1",
     "babel-eslint": "^10.1.0",
+    "chai": "^4.3.4",
     "eslint": "^7.24.0",
     "eslint-config-airbnb": "^18.2.1",
     "eslint-config-prettier": "^6.15.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-prettier": "^3.1.4",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
     "prettier": "^2.2.1",
+    "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   },
   "dependencies": {
