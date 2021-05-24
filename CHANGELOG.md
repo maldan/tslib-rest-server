@@ -1,3 +1,11 @@
+## [3.0.0] - 2021-04-12
+
+### Changed
+-    Removed isNotEmpty fields. Now everything works from struct.
+-    Remove index function name from documentation
+-    Auto convert to types from struct
+-    Non required types
+
 ## [2.4.1] - 2021-04-05
 
 ### Fixed
