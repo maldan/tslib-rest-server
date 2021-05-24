@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WS_Controller = void 0;
+const WS_Error_1 = require("../error/WS_Error");
 const StringHelper_1 = __importDefault(require("../util/StringHelper"));
 class WS_Controller {
     constructor(staticClass) {
@@ -57,10 +58,12 @@ class WS_Controller {
             fnName = StringHelper_1.default.camelToKebab(ctx.method.toLowerCase() + '_' + fnName);
             const fn = this._functionList[fnName];
             if (!fn) {
-                throw new Error(`[405] Method not found!`);
+                throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.NOT_FOUND, fnName, 'Method not found', 405);
+                // throw new Error(`[405] Method not found!`);
             }
             if (fn.httpMethod !== ctx.method) {
-                throw new Error(`[405] Method not allowed!`);
+                throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.NOT_FOUND, fnName, 'Method not found', 405);
+                // throw new Error(`[405] Method not allowed!`);
             }
             // this._sc['context'] = ctx;
             // this._functionList[fnName].function['sas'] = 1;

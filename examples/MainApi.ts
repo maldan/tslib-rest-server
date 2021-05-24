@@ -1,7 +1,5 @@
-import { WS_DefaultClass } from '../dist';
-
-export class MainApi extends WS_DefaultClass {
-  static path: string = 'activity';
+export class MainApi {
+  static path: string = 'main';
 
   static get_index(): unknown {
     return 'hello';

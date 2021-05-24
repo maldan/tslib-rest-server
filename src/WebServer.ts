@@ -11,6 +11,7 @@ export class WebServer {
   private _wr: WS_Router[] = [];
   static docsRoot: string = './docs';
   static docsDescription: string = '';
+  private _server: Http.Server | null = null;
 
   constructor(routers: WS_Router[] = []) {
     for (let i = 0; i < routers.length; i++) {
@@ -22,15 +23,15 @@ export class WebServer {
     DocumentationGenerator.generate();
   }
 
-  public registerRouter(wr: WS_Router): void {
+  registerRouter(wr: WS_Router): void {
     this._wr.push(wr);
   }
 
-  public createRouter(prefix: string = '', classes: any[] = [], folders: string[] = []): WS_Router {
+  createRouter(prefix: string = '', classes: any[] = [], folders: string[] = []): WS_Router {
     return new WS_Router(prefix, classes, folders);
   }
 
-  public parseQueryParams(url: string): any {
+  parseQueryParams(url: string): any {
     let queryParams: any = url.split('?');
     if (queryParams.length > 1) {
       queryParams = queryParams.slice(1).join('?').split('&');
@@ -77,7 +78,7 @@ export class WebServer {
         return msg;
     }*/
 
-  public listen(port: number): void {
+  listen(port: number): void {
     const requestListener = async (req: IncomingMessage, res: ServerResponse) => {
       if (!req.url) {
         return;
@@ -259,7 +260,11 @@ export class WebServer {
       }
     };
 
-    const server = Http.createServer(requestListener);
-    server.listen(port);
+    this._server = Http.createServer(requestListener);
+    this._server.listen(port);
+  }
+
+  destroy(): void {
+    this._server?.close();
   }
 }

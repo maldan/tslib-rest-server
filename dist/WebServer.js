@@ -39,6 +39,7 @@ const DocumentationGenerator_1 = require("./util/DocumentationGenerator");
 class WebServer {
     constructor(routers = []) {
         this._wr = [];
+        this._server = null;
         for (let i = 0; i < routers.length; i++) {
             this.registerRouter(routers[i]);
         }
@@ -255,8 +256,12 @@ class WebServer {
                 sas(Buffer.from('{}'));
             }
         });
-        const server = Http.createServer(requestListener);
-        server.listen(port);
+        this._server = Http.createServer(requestListener);
+        this._server.listen(port);
+    }
+    destroy() {
+        var _a;
+        (_a = this._server) === null || _a === void 0 ? void 0 : _a.close();
     }
 }
 exports.WebServer = WebServer;

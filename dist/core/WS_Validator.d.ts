@@ -2,16 +2,13 @@ export declare class WS_Validator {
     static isNotEmpty(args: {
         [x: string]: any;
     }): void;
-    static isInteger(args: {
+    static isString(args: {
         [x: string]: any;
     }): void;
     static isNumber(args: {
         [x: string]: any;
     }): void;
-    static inRange(args: {
-        [x: string]: any;
-    }, min: number, max: number): void;
-    static isPositive(args: {
+    static isBoolean(args: {
         [x: string]: any;
     }): void;
     static isValid(kv: {

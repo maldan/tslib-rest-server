@@ -11,14 +11,8 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, 
-// isNotEmpty = [],
-// isPositive = [],
-// isInteger = [],
-// isNumber = [],
-// isMatch = {},
-// isValid = {},
-description = '', examples = [], struct = {}, contentType = undefined, }) {
+const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean'];
+function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, description = '', examples = [], struct = {}, contentType = undefined, }) {
     return function (target, propertyKey, descriptor) {
         // Generate documentation
         DocumentationGenerator_1.DocumentationGenerator.add({
@@ -30,12 +24,6 @@ description = '', examples = [], struct = {}, contentType = undefined, }) {
             useJsonWrapper,
             description,
             examples,
-            /*isNotEmpty,
-            isPositive,
-            isInteger,
-            isNumber,
-            isMatch,
-            isValid,*/
             struct,
         });
         const originalMethod = descriptor.value;
@@ -45,6 +33,8 @@ description = '', examples = [], struct = {}, contentType = undefined, }) {
             const isPositive = [];
             const isInteger = [];
             const isNumber = [];
+            const isBoolean = [];
+            const isString = [];
             const isMatch = {};
             const isValid = {};
             // Use wrapper json
@@ -56,58 +46,166 @@ description = '', examples = [], struct = {}, contentType = undefined, }) {
             }
             // Fill from struct
             for (const key in struct) {
-                // String params
-                if (struct[key] === 'string') {
-                    isNotEmpty.push(key);
+                let currentKey = struct[key];
+                // Check if optional
+                let isOptional = false;
+                if (currentKey.slice(-1) === '?') {
+                    isOptional = true;
+                    currentKey = currentKey.slice(0, -1);
                 }
-                if (struct[key] === 'string?') {
-                    if (requestArgs[key]) {
+                // Check if array
+                let isArray = false;
+                if (currentKey.slice(-2) === '[]') {
+                    isArray = true;
+                    currentKey = currentKey.slice(0, -2);
+                    if (Array.isArray(requestArgs[key])) {
+                        // ok
+                    }
+                    else {
+                        try {
+                            requestArgs[key] = JSON.parse(requestArgs[key]);
+                        }
+                        catch (_a) {
+                            throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.INVALID, key, `Field must be an array. Example [1, 2, 3] or ["a", "b", "c"]`);
+                        }
+                        if (!Array.isArray(requestArgs[key])) {
+                            throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.INVALID, key, `Field must be an array. Example [1, 2, 3] or ["a", "b", "c"]`);
+                        }
+                    }
+                }
+                // Check types
+                if (!ALLOWED_TYPES.includes(currentKey)) {
+                    throw new WS_Error_1.WS_Error(WS_Error_1.ErrorType.INVALID, key, `Unsupported type "${currentKey}"`);
+                }
+                // Check string
+                if (currentKey === 'string') {
+                    if (isOptional) {
+                        if (!requestArgs[key]) {
+                            requestArgs[key] = '';
+                        }
+                    }
+                    else {
+                        isNotEmpty.push(key);
+                        isString.push(key);
+                    }
+                }
+                // Check boolean
+                if (currentKey === 'boolean') {
+                    if (isOptional) {
+                        if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+                            requestArgs[key] = requestArgs[key] || 'false';
+                            isBoolean.push(key);
+                        }
+                        else {
+                            requestArgs[key] = 'false';
+                        }
+                    }
+                    else {
+                        isBoolean.push(key);
                         isNotEmpty.push(key);
                     }
-                    else {
-                        requestArgs[key] = '';
+                }
+                // Check number
+                if (currentKey === 'number') {
+                    if (isOptional) {
+                        if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+                            requestArgs[key] = requestArgs[key] || '0';
+                            isNumber.push(key);
+                        }
+                        else {
+                            requestArgs[key] = '0';
+                        }
                     }
-                }
-                // Number params
-                if (struct[key] === 'number') {
-                    requestArgs[key] = Number(requestArgs[key]);
-                    isNumber.push(key);
-                }
-                if (struct[key] === 'number?') {
-                    if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
-                        requestArgs[key] = Number(requestArgs[key]);
+                    else {
+                        // requestArgs[key] = Number(requestArgs[key]);
+                        // if (Number.isNaN(requestArgs[key])) {
+                        //  requestArgs[key] = null;
+                        // }
+                        isNotEmpty.push(key);
                         isNumber.push(key);
                     }
-                    else {
-                        requestArgs[key] = 0;
+                }
+                // Check email
+                if (currentKey === 'email') {
+                    if (isOptional) {
+                        if (requestArgs[key]) {
+                            isValid[key] = 'email';
+                        }
+                        else {
+                            requestArgs[key] = '';
+                        }
                     }
-                }
-                // Emails
-                if (struct[key] === 'email') {
-                    isValid[key] = 'email';
-                }
-                if (struct[key] === 'email?') {
-                    if (requestArgs[key]) {
+                    else {
                         isValid[key] = 'email';
                     }
-                    else {
-                        requestArgs[key] = '';
+                }
+                // Check date
+                if (currentKey === 'date') {
+                    if (isOptional) {
+                        if (requestArgs[key]) {
+                            // requestArgs[key] = new Date(requestArgs[key] as string);
+                            isValid[key] = 'date';
+                        }
+                        else {
+                            requestArgs[key] = null;
+                        }
                     }
-                }
-                // Date
-                if (struct[key] === 'date') {
-                    requestArgs[key] = new Date(requestArgs[key]);
-                    isValid[key] = 'date';
-                }
-                if (struct[key] === 'date?') {
-                    if (requestArgs[key]) {
-                        requestArgs[key] = new Date(requestArgs[key]);
+                    else {
+                        // requestArgs[key] = new Date(requestArgs[key] as string);
                         isValid[key] = 'date';
                     }
-                    else {
-                        requestArgs[key] = null;
-                    }
                 }
+                // String params
+                /*if (struct[key] === 'string') {
+                  isNotEmpty.push(key);
+                }
+                if (struct[key] === 'string?') {
+                  if (requestArgs[key]) {
+                    isNotEmpty.push(key);
+                  } else {
+                    requestArgs[key] = '';
+                  }
+                }
+        
+                // Number params
+                if (struct[key] === 'number') {
+                  requestArgs[key] = Number(requestArgs[key]);
+                  isNumber.push(key);
+                }
+                if (struct[key] === 'number?') {
+                  if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+                    requestArgs[key] = Number(requestArgs[key]);
+                    isNumber.push(key);
+                  } else {
+                    requestArgs[key] = 0;
+                  }
+                }
+        
+                // Emails
+                if (struct[key] === 'email') {
+                  isValid[key] = 'email';
+                }
+                if (struct[key] === 'email?') {
+                  if (requestArgs[key]) {
+                    isValid[key] = 'email';
+                  } else {
+                    requestArgs[key] = '';
+                  }
+                }
+        
+                // Date
+                if (struct[key] === 'date') {
+                  requestArgs[key] = new Date(requestArgs[key] as string);
+                  isValid[key] = 'date';
+                }
+                if (struct[key] === 'date?') {
+                  if (requestArgs[key]) {
+                    requestArgs[key] = new Date(requestArgs[key] as string);
+                    isValid[key] = 'date';
+                  } else {
+                    requestArgs[key] = null;
+                  }
+                }*/
             }
             // Check auth
             if (isRequiresAuthorization && !requestArgs.accessToken) {
@@ -115,9 +213,11 @@ description = '', examples = [], struct = {}, contentType = undefined, }) {
             }
             // Check empty fields
             WS_Validator_1.WS_Validator.isNotEmpty(extractFields(requestArgs, isNotEmpty));
-            WS_Validator_1.WS_Validator.isPositive(extractFields(requestArgs, isPositive));
-            WS_Validator_1.WS_Validator.isInteger(extractFields(requestArgs, isInteger));
             WS_Validator_1.WS_Validator.isNumber(extractFields(requestArgs, isNumber));
+            WS_Validator_1.WS_Validator.isString(extractFields(requestArgs, isString));
+            WS_Validator_1.WS_Validator.isBoolean(extractFields(requestArgs, isBoolean));
+            // WS_Validator.isPositive(extractFields(requestArgs, isPositive));
+            // WS_Validator.isInteger(extractFields(requestArgs, isInteger));
             // Check matching
             for (const key in isMatch) {
                 WS_Validator_1.WS_Validator.isMatch({ [key]: requestArgs[key] }, isMatch[key]);
@@ -135,6 +235,16 @@ description = '', examples = [], struct = {}, contentType = undefined, }) {
             }
             for (const key of isInteger) {
                 requestArgs[key] = Number.parseInt(requestArgs[key]);
+            }
+            // Boolean
+            for (const key of isBoolean) {
+                requestArgs[key] = requestArgs[key] === 'true' || requestArgs[key] === true ? true : false;
+            }
+            // Convert date to date
+            for (const key in isValid) {
+                if (isValid[key] === 'date') {
+                    requestArgs[key] = new Date(requestArgs[key]);
+                }
             }
             // console.log('wrapped function: before invoking ' + propertyKey);
             const result = originalMethod.apply(this, args);

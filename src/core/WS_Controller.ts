@@ -1,3 +1,4 @@
+import { ErrorType, WS_Error } from '../error/WS_Error';
 import FunctionHelper from '../util/FunctionHelper';
 import StringHelper from '../util/StringHelper';
 import { Type_MethodInfo } from '../util/Types';
@@ -50,16 +51,18 @@ export class WS_Controller {
     }
   }
 
-  async execute(ctx: WS_Context, fnName: string, args: any) {
+  async execute(ctx: WS_Context, fnName: string, args: any): Promise<unknown> {
     fnName = StringHelper.camelToKebab(ctx.method.toLowerCase() + '_' + fnName);
 
     const fn = this._functionList[fnName];
     if (!fn) {
-      throw new Error(`[405] Method not found!`);
+      throw new WS_Error(ErrorType.NOT_FOUND, fnName, 'Method not found', 405);
+      // throw new Error(`[405] Method not found!`);
     }
 
     if (fn.httpMethod !== ctx.method) {
-      throw new Error(`[405] Method not allowed!`);
+      throw new WS_Error(ErrorType.NOT_FOUND, fnName, 'Method not found', 405);
+      // throw new Error(`[405] Method not allowed!`);
     }
 
     // this._sc['context'] = ctx;

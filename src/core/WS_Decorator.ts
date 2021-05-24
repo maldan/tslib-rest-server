@@ -7,12 +7,6 @@ export type ConfigParams = {
   useJsonWrapper?: boolean;
   isRequiresAuthorization?: boolean;
   isReturnAccessToken?: boolean;
-  // isNotEmpty?: string[];
-  // isInteger?: string[];
-  // isNumber?: string[];
-  // isPositive?: string[];
-  // isMatch?: { [x: string]: (string | number)[] };
-  // isValid?: { [x: string]: string };
   description?: string;
   examples?: {
     request: Record<string, unknown>;
@@ -30,16 +24,12 @@ const extractFields = (obj: Record<string, unknown>, fields: string[]) => {
   return out;
 };
 
+const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean'];
+
 export function Config({
   useJsonWrapper = false,
   isRequiresAuthorization = false,
   isReturnAccessToken = false,
-  // isNotEmpty = [],
-  // isPositive = [],
-  // isInteger = [],
-  // isNumber = [],
-  // isMatch = {},
-  // isValid = {},
   description = '',
   examples = [],
   struct = {},
@@ -60,12 +50,6 @@ export function Config({
       useJsonWrapper,
       description,
       examples,
-      /*isNotEmpty,
-      isPositive,
-      isInteger,
-      isNumber,
-      isMatch,
-      isValid,*/
       struct,
     });
 
@@ -76,6 +60,8 @@ export function Config({
       const isPositive = [] as string[];
       const isInteger = [] as string[];
       const isNumber = [] as string[];
+      const isBoolean = [] as string[];
+      const isString = [] as string[];
       const isMatch: Record<string, (string | number)[]> = {};
       const isValid: Record<string, string> = {};
 
@@ -89,8 +75,125 @@ export function Config({
 
       // Fill from struct
       for (const key in struct) {
+        let currentKey = struct[key];
+
+        // Check if optional
+        let isOptional = false;
+        if (currentKey.slice(-1) === '?') {
+          isOptional = true;
+          currentKey = currentKey.slice(0, -1);
+        }
+
+        // Check if array
+        let isArray = false;
+        if (currentKey.slice(-2) === '[]') {
+          isArray = true;
+          currentKey = currentKey.slice(0, -2);
+
+          if (Array.isArray(requestArgs[key])) {
+            // ok
+          } else {
+            try {
+              requestArgs[key] = JSON.parse(requestArgs[key] as string);
+            } catch {
+              throw new WS_Error(
+                ErrorType.INVALID,
+                key,
+                `Field must be an array. Example [1, 2, 3] or ["a", "b", "c"]`,
+              );
+            }
+
+            if (!Array.isArray(requestArgs[key])) {
+              throw new WS_Error(
+                ErrorType.INVALID,
+                key,
+                `Field must be an array. Example [1, 2, 3] or ["a", "b", "c"]`,
+              );
+            }
+          }
+        }
+
+        // Check types
+        if (!ALLOWED_TYPES.includes(currentKey)) {
+          throw new WS_Error(ErrorType.INVALID, key, `Unsupported type "${currentKey}"`);
+        }
+
+        // Check string
+        if (currentKey === 'string') {
+          if (isOptional) {
+            if (!requestArgs[key]) {
+              requestArgs[key] = '';
+            }
+          } else {
+            isNotEmpty.push(key);
+            isString.push(key);
+          }
+        }
+
+        // Check boolean
+        if (currentKey === 'boolean') {
+          if (isOptional) {
+            if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+              requestArgs[key] = requestArgs[key] || 'false';
+              isBoolean.push(key);
+            } else {
+              requestArgs[key] = 'false';
+            }
+          } else {
+            isBoolean.push(key);
+            isNotEmpty.push(key);
+          }
+        }
+
+        // Check number
+        if (currentKey === 'number') {
+          if (isOptional) {
+            if (requestArgs[key] !== null && requestArgs[key] !== undefined) {
+              requestArgs[key] = requestArgs[key] || '0';
+              isNumber.push(key);
+            } else {
+              requestArgs[key] = '0';
+            }
+          } else {
+            // requestArgs[key] = Number(requestArgs[key]);
+            // if (Number.isNaN(requestArgs[key])) {
+            //  requestArgs[key] = null;
+            // }
+            isNotEmpty.push(key);
+            isNumber.push(key);
+          }
+        }
+
+        // Check email
+        if (currentKey === 'email') {
+          if (isOptional) {
+            if (requestArgs[key]) {
+              isValid[key] = 'email';
+            } else {
+              requestArgs[key] = '';
+            }
+          } else {
+            isValid[key] = 'email';
+          }
+        }
+
+        // Check date
+        if (currentKey === 'date') {
+          if (isOptional) {
+            if (requestArgs[key]) {
+              // requestArgs[key] = new Date(requestArgs[key] as string);
+              isValid[key] = 'date';
+            } else {
+              requestArgs[key] = null;
+            }
+          } else {
+            // requestArgs[key] = new Date(requestArgs[key] as string);
+            isValid[key] = 'date';
+          }
+        }
+
         // String params
-        if (struct[key] === 'string') {
+        /*if (struct[key] === 'string') {
           isNotEmpty.push(key);
         }
         if (struct[key] === 'string?') {
@@ -139,7 +242,7 @@ export function Config({
           } else {
             requestArgs[key] = null;
           }
-        }
+        }*/
       }
 
       // Check auth
@@ -153,9 +256,12 @@ export function Config({
 
       // Check empty fields
       WS_Validator.isNotEmpty(extractFields(requestArgs, isNotEmpty));
-      WS_Validator.isPositive(extractFields(requestArgs, isPositive));
-      WS_Validator.isInteger(extractFields(requestArgs, isInteger));
       WS_Validator.isNumber(extractFields(requestArgs, isNumber));
+      WS_Validator.isString(extractFields(requestArgs, isString));
+      WS_Validator.isBoolean(extractFields(requestArgs, isBoolean));
+
+      // WS_Validator.isPositive(extractFields(requestArgs, isPositive));
+      // WS_Validator.isInteger(extractFields(requestArgs, isInteger));
 
       // Check matching
       for (const key in isMatch) {
@@ -176,6 +282,18 @@ export function Config({
       }
       for (const key of isInteger) {
         requestArgs[key] = Number.parseInt(requestArgs[key] as string);
+      }
+
+      // Boolean
+      for (const key of isBoolean) {
+        requestArgs[key] = requestArgs[key] === 'true' || requestArgs[key] === true ? true : false;
+      }
+
+      // Convert date to date
+      for (const key in isValid) {
+        if (isValid[key] === 'date') {
+          requestArgs[key] = new Date(requestArgs[key] as string);
+        }
       }
 
       // console.log('wrapped function: before invoking ' + propertyKey);
