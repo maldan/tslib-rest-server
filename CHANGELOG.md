@@ -1,3 +1,10 @@
+## [4.0.0] - 2021-04-24
+
+### Changed
+-    Validation logic
+-    Boolean types, optional types, arrays
+-    Minor changes
+
 ## [3.0.0] - 2021-04-12
 
 ### Changed
