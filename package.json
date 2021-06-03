@@ -5,8 +5,9 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "prepublish": "tsc",
+    "copy": "node copy.js",
+    "build": "tsc && node copy.js",
+    "prepublish": "tsc && node copy.js",
     "test": "mocha -r ts-node/register test/**/*.test.ts"
   },
   "keywords": [

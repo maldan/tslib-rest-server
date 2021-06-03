@@ -151,7 +151,7 @@ class DocumentationGenerator {
         <hr>
       `;
             }
-            Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, yield WS_Template_1.WS_Template.file(__dirname + '/../../src/doc/index.ejs', {
+            Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, yield WS_Template_1.WS_Template.file(__dirname + '/../doc/index.ejs', {
                 description: WebServer_1.WebServer.docsDescription,
                 buildJson: `
           <script>
