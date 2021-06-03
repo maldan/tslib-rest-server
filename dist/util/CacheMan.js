@@ -21,8 +21,9 @@ class CacheItem {
 class CacheMan {
     constructor() {
         this._cache = {};
+        this._intervalId = 0;
         // Cache scheduller
-        setInterval(() => {
+        this._intervalId = setInterval(() => {
             for (const key in this._cache) {
                 this._cache[key].duration -= 1;
                 if (this._cache[key].duration <= 0) {
@@ -30,6 +31,9 @@ class CacheMan {
                 }
             }
         }, 1000);
+    }
+    destroy() {
+        clearInterval(this._intervalId);
     }
     smart(key, value, time = 10) {
         return __awaiter(this, void 0, void 0, function* () {

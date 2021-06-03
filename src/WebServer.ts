@@ -11,12 +11,13 @@ import { DebugApi } from './debug/DebugApi';
 
 export class WebServer {
   private _wr: WS_Router[] = [];
+  private _server: Http.Server | null = null;
+
   static docsRoot: string = './docs';
   static docsDescription: string = '';
   static cache: CacheMan = new CacheMan();
   static adminPassword: string = '';
   static isGenerateDocumentation: boolean = false;
-  private _server: Http.Server | null = null;
 
   constructor(routers: WS_Router[] = []) {
     for (let i = 0; i < routers.length; i++) {
@@ -275,5 +276,6 @@ export class WebServer {
 
   destroy(): void {
     this._server?.close();
+    WebServer.cache.destroy();
   }
 }

@@ -10,10 +10,11 @@ class CacheItem {
 
 export class CacheMan {
   _cache: Record<string, CacheItem> = {};
+  _intervalId: any = 0;
 
   constructor() {
     // Cache scheduller
-    setInterval(() => {
+    this._intervalId = setInterval(() => {
       for (const key in this._cache) {
         this._cache[key].duration -= 1;
         if (this._cache[key].duration <= 0) {
@@ -21,6 +22,10 @@ export class CacheMan {
         }
       }
     }, 1000);
+  }
+
+  destroy(): void {
+    clearInterval(this._intervalId);
   }
 
   async smart<T>(key: string, value: () => Promise<T>, time: number = 10): Promise<T> {

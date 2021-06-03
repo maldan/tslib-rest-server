@@ -267,6 +267,7 @@ class WebServer {
     destroy() {
         var _a;
         (_a = this._server) === null || _a === void 0 ? void 0 : _a.close();
+        WebServer.cache.destroy();
     }
 }
 exports.WebServer = WebServer;
