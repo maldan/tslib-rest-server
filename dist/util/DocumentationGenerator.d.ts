@@ -13,5 +13,5 @@ export declare type Type_DocumentStruct = {
 export declare class DocumentationGenerator {
     private static _sas;
     static add(params: Type_DocumentStruct): void;
-    static generate(): void;
+    static generate(): Promise<void>;
 }

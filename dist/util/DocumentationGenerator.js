@@ -18,11 +18,21 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentationGenerator = void 0;
 const Fs = __importStar(require("fs"));
 const WebServer_1 = require("../WebServer");
 const WS_Error_1 = require("../error/WS_Error");
+const WS_Template_1 = require("../core/WS_Template");
 function buildJson(json) {
     return json.replace(/"(.*?)": (.*)/g, (match, p1, p2) => {
         let comma = '';
@@ -77,7 +87,7 @@ function buildForm(struct, id) {
         if (struct[key] === 'file') {
             type = 'file';
         }
-        out += `<input name=${key} type="${type}" placeholder="${key}">`;
+        out += `<input name=${key} type="${type}" placeholder="${key}" multiple>`;
     }
     out += `</form>`;
     return out;
@@ -88,198 +98,18 @@ class DocumentationGenerator {
     }
     static generate() {
         var _a;
-        let out = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>API Documentation</title>
-      <style>
-        body {
-          margin: 0;
-          padding: 30px;
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu',
-            'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
-          -webkit-font-smoothing: antialiased;
-          -moz-osx-font-smoothing: grayscale;
-          background: #333333;
-        }
-        
-        code {
-          font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-        }
-
-        .api-call {
-          display: flex;
-          align-items: center;
-          font-size: 14px;
-          margin-bottom: 15px;
-        }
-
-        .description {
-          line-height: 24px;
-          font-size: 16px;
-          background: #252525;
-          padding: 15px;
-          border-radius: 6px;
-          color: #b9b9b9;
-          margin-bottom: 15px;
-        }
-
-        .method {
-          background: #c57b1f;
-          padding: 5px 10px;
-          border-radius: 5px 0px 0px 5px;
-          color: #fefefe;
-          font-weight: bold;
-        }
-
-        .method.GET {
-          background: #1f79c5;
-        }
-
-        .method.DELETE {
-          background: #af0f2d;
-        }
-        
-        .auth {
-          background: #5c8609;
-          padding: 5px 10px;
-          border-radius: 5px;
-          font-weight: bold;
-          margin-left: 20px;
-          color: #c7eab9;
-        }
-
-        .path {
-          background: #232323;
-          font-weight: bold;
-          padding: 5px 10px;
-          border-radius: 0px 5px 5px 0px;
-          color: #eabc55;
-        }
-
-        .example {
-          background: #252525;
-          padding: 15px;
-          margin: 0;
-          color: #b9b9b9;
-          border-radius: 5px;
-          margin-bottom: 15px;
-        }
-
-        .struct {
-          background: #151515;
-          padding: 15px;
-          border-radius: 7px;
-          color: #989898;
-          white-space: pre-wrap;
-          margin-bottom: 15px;
-        }
-
-        .struct .json-key, .request .json-key {
-          color: #ffb060;
-        }
-
-        .response .json-key {
-          color: #e2801b;
-        }
-
-        .request {
-          background: #151515;
-          padding: 15px;
-          border-radius: 7px;
-          color: #989898;
-          white-space: pre-wrap;
-          margin-bottom: 15px;
-        }
-
-        .response {
-          background: #151515;
-          padding: 15px;
-          border-radius: 7px;
-          color: #989898;
-          white-space: pre-wrap;
-        }
-        h3 {
-          margin: 0;
-          margin-bottom: 10px;
-        }
-        h4 {
-          margin: 0;
-          margin-bottom: 5px;
-        }
-
-        .goto {
-          font-weight: bold;
-          font-size: 22px;
-          width: 25px;
-          text-align: center;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .json-value.string {
-          color: #26b133;
-        }
-        .json-value.boolean {
-          color: #77a0e0;
-        }
-        .json-value.number {
-          color: #feb400;
-        }
-        .json-value.null {
-          color: #ea640f;
-          font-weight: bold;
-        }
-
-        pre {
-          margin: 0;
-        }
-
-        input {
-          outline: none;
-          border: 0;
-          background: #151515;
-          padding: 10px;
-          color: #9c9c9c;
-          margin-right: 5px;
-          margin-bottom: 5px;
-        }
-
-        hr {
-          margin-bottom: 50px;
-          margin-top: 50px;
-          border: 1px solid #5d5d5d;
-        }
-
-        .description hr {
-          margin-bottom: 25px;
-          margin-top: 25px;
-        }
-
-        ::-webkit-calendar-picker-indicator {
-          filter: invert(1);
-          opacity: 0.5;
-        }
-      </style>
-    </head>
-    <body>
-    <div class="description" style="margin-bottom: 50px;">${WebServer_1.WebServer.docsDescription}</div>
-    `;
-        for (let i = 0; i < this._sas.length; i++) {
-            const item = this._sas[i];
-            const path = `/api/${item.className}/${item.functionName === 'index' ? '' : item.functionName}`;
-            out += `
+        return __awaiter(this, void 0, void 0, function* () {
+            let out = ``;
+            for (let i = 0; i < this._sas.length; i++) {
+                const item = this._sas[i];
+                const path = `/api/${item.className}/${item.functionName === 'index' ? '' : item.functionName}`;
+                out += `
        <div class="api-call">
         <div class="method ${item.method.toUpperCase()}">${item.method.toUpperCase()}</div>
         <div class="path">${path}</div>
         ${item.isRequiresAuthorization
-                ? '<div class="auth" title="Requires authorization token">AUTH</div>'
-                : ''}
+                    ? '<div class="auth" title="Requires authorization token">AUTH</div>'
+                    : ''}
        </div>
        <div style="display: flex;">
         <div style="margin-right: 15px; width: 500px;">
@@ -302,7 +132,7 @@ class DocumentationGenerator {
         </div>
         <div style="flex: 1;">
           ${(_a = item.examples) === null || _a === void 0 ? void 0 : _a.map((x, i) => {
-                return `
+                    return `
                 <div class="example">
                   <div>
                     <div style="flex: 1;">
@@ -315,77 +145,22 @@ class DocumentationGenerator {
                   </div>
                 </div>
               `;
-            }).join('')}
+                }).join('')}
           </div>
         </div>
         <hr>
       `;
-        }
-        out += `
-    <script>
-      ${buildJson.toString()}
-
-      async function makeQuery(path, method, data, id, isReturnAccessToken) {
-        const hasBody = (method.toUpperCase() === 'POST' || method.toUpperCase() === 'PUT');
-        const queryString = hasBody ?'' :Object.keys(data).map(key => key + '=' + data[key]).join('&');
-        let bodyData = undefined;
-        if (method.toUpperCase() === 'POST') bodyData = JSON.stringify(data);
-        if (method.toUpperCase() === 'PUT') bodyData = data;
-        
-        const headers = {
-          'Authorization': localStorage.getItem('testApi_accessToken'),
-          'Content-Type': 'application/json'
-        };
-
-        if ( method.toUpperCase() === 'PUT') delete headers['Content-Type'];
-
-        const response = await fetch(window.location.origin + path + '?' + queryString, {
-          method,
-          headers,
-          body: bodyData
-        });
-        const json = await response.json();
-        if (isReturnAccessToken) {
-          if (typeof json === "string") {
-            localStorage.setItem('testApi_accessToken', json);
-          } else {
-            if (typeof json.response === "string") {
-              localStorage.setItem('testApi_accessToken', json.response);
-            } else {
-              localStorage.setItem('testApi_accessToken', json.response.accessToken);
             }
-          }
-
-        }
-        document.querySelector('#result-' + id).innerHTML = buildJson(JSON.stringify(json, null, 4));
-      }
-
-      document.querySelectorAll('.run-query').forEach(x => {
-        const id = x.getAttribute('data-id');
-        const path = x.getAttribute('data-path');
-        const method = x.getAttribute('data-method');
-        const isReturnAccessToken = x.getAttribute('data-is-return-access-token') === 'true';
-       
-        x.addEventListener('click', (e) => {
-          const input = document.querySelectorAll('#form-' + id + ' > input');
-          const formData = {};
-          const formData_real = new FormData();
-          input.forEach(y => {
-            const type = y.getAttribute('type');
-            formData[y.getAttribute('name')] = y.value;
-            formData_real.append(y.getAttribute('name'), type === 'file' ?y.files[0] :y.value);
-          });
-
-          makeQuery(path, method, method.toUpperCase() === 'PUT' ?formData_real :formData, id, isReturnAccessToken);
+            Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, yield WS_Template_1.WS_Template.file(__dirname + '/../../src/doc/index.ejs', {
+                description: WebServer_1.WebServer.docsDescription,
+                buildJson: `
+          <script>
+          ${buildJson.toString()}
+          </script>
+        `,
+                out,
+            }));
         });
-      });
-
-      document.querySelectorAll('.window-location-origin').forEach(x => {
-        x.innerHTML = window.location.origin;
-      });
-    </script>
-    </body></html>`;
-        Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, out);
     }
 }
 exports.DocumentationGenerator = DocumentationGenerator;
