@@ -24,7 +24,7 @@ const extractFields = (obj: Record<string, unknown>, fields: string[]) => {
   return out;
 };
 
-const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean'];
+const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean', 'file'];
 
 export function Config({
   useJsonWrapper = false,

@@ -11,7 +11,7 @@ const extractFields = (obj, fields) => {
     }
     return out;
 };
-const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean'];
+const ALLOWED_TYPES = ['number', 'integer', 'string', 'email', 'date', 'boolean', 'file'];
 function Config({ useJsonWrapper = false, isRequiresAuthorization = false, isReturnAccessToken = false, description = '', examples = [], struct = {}, contentType = undefined, }) {
     return function (target, propertyKey, descriptor) {
         // Generate documentation
