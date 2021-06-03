@@ -51,6 +51,7 @@ class WebServer {
             DocumentationGenerator_1.DocumentationGenerator.generate();
         }
         this.registerRouter(new WS_Router_1.WS_Router('--debug', [DebugApi_1.DebugApi]));
+        WebServer.cache.init();
     }
     registerRouter(wr) {
         this._wr.push(wr);

@@ -31,6 +31,7 @@ export class WebServer {
     }
 
     this.registerRouter(new WS_Router('--debug', [DebugApi]));
+    WebServer.cache.init();
   }
 
   registerRouter(wr: WS_Router): void {

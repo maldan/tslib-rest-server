@@ -22,6 +22,8 @@ class CacheMan {
     constructor() {
         this._cache = {};
         this._intervalId = 0;
+    }
+    init() {
         // Cache scheduller
         this._intervalId = setInterval(() => {
             for (const key in this._cache) {

@@ -12,7 +12,9 @@ export class CacheMan {
   _cache: Record<string, CacheItem> = {};
   _intervalId: any = 0;
 
-  constructor() {
+  constructor() {}
+
+  init(): void {
     // Cache scheduller
     this._intervalId = setInterval(() => {
       for (const key in this._cache) {
