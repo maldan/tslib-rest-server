@@ -6,11 +6,16 @@ import { WS_Router } from './core/WS_Router';
 import { WS_Context } from './core/WS_Context';
 import { WS_Error } from './error/WS_Error';
 import { DocumentationGenerator } from './util/DocumentationGenerator';
+import { CacheMan } from './util/CacheMan';
+import { DebugApi } from './debug/DebugApi';
 
 export class WebServer {
   private _wr: WS_Router[] = [];
   static docsRoot: string = './docs';
   static docsDescription: string = '';
+  static cache: CacheMan = new CacheMan();
+  static adminPassword: string = '';
+  static isGenerateDocumentation: boolean = false;
   private _server: Http.Server | null = null;
 
   constructor(routers: WS_Router[] = []) {
@@ -20,7 +25,11 @@ export class WebServer {
 
     // Init docs and generate
     Fs.mkdirSync(WebServer.docsRoot, { recursive: true });
-    DocumentationGenerator.generate();
+    if (WebServer.isGenerateDocumentation) {
+      DocumentationGenerator.generate();
+    }
+
+    this.registerRouter(new WS_Router('--debug', [DebugApi]));
   }
 
   registerRouter(wr: WS_Router): void {

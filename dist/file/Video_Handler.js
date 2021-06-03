@@ -27,11 +27,14 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Video_Handler = void 0;
 const Path = __importStar(require("path"));
 const Fs = __importStar(require("fs-extra"));
-const Mime = __importStar(require("mime"));
+const mime_1 = __importDefault(require("mime"));
 class Video_Handler {
     constructor() {
         this._cache = {};
@@ -50,7 +53,7 @@ class Video_Handler {
               ctx.contentType = 'image/jpeg';
               return this._cache[cachePath];
             }*/
-            ctx.contentType = Mime.getType(extension) || 'text/plain';
+            ctx.contentType = mime_1.default.getType(extension) || 'application/octet-stream';
             ctx.status = 206;
             ctx.acceptRanges = 'bytes';
             if (ctx.range) {

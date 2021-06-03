@@ -2,9 +2,8 @@ import { IFileHandler } from './IFileHandler';
 import * as Path from 'path';
 import * as Util from 'util';
 import * as Fs from 'fs-extra';
-import * as Mime from 'mime';
+import Mime from 'mime';
 import { WS_Context } from '../core/WS_Context';
-import { ReadStream } from 'fs';
 
 export class Video_Handler implements IFileHandler {
   private _cache: { [key: string]: unknown } = {};
@@ -18,7 +17,7 @@ export class Video_Handler implements IFileHandler {
     ctx: WS_Context,
     path: string,
     args: { [key: string]: unknown },
-  ): Promise<Buffer | ReadStream> {
+  ): Promise<Buffer | Fs.ReadStream> {
     const extension = Path.extname(path);
     const thumbnail = args['thumbnail'];
     const cachePath = path + JSON.stringify(args);
@@ -28,7 +27,7 @@ export class Video_Handler implements IFileHandler {
       return this._cache[cachePath];
     }*/
 
-    ctx.contentType = Mime.getType(extension) || 'text/plain';
+    ctx.contentType = Mime.getType(extension) || 'application/octet-stream';
     ctx.status = 206;
     ctx.acceptRanges = 'bytes';
 

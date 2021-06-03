@@ -27,15 +27,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Image_Handler = void 0;
 const Path = __importStar(require("path"));
-const Mime = __importStar(require("mime"));
+const mime_1 = __importDefault(require("mime"));
+const sharp_1 = __importDefault(require("sharp"));
 const Fs = __importStar(require("fs-extra"));
+const WebServer_1 = require("../WebServer");
 class Image_Handler {
-    constructor() {
-        this._cache = {};
-    }
     match(path) {
         const extension = Path.extname(path);
         return ['.jpg', '.png', '.jpeg', '.gif'].includes(extension);
@@ -43,10 +45,54 @@ class Image_Handler {
     handle(ctx, path, args) {
         return __awaiter(this, void 0, void 0, function* () {
             const extension = Path.extname(path);
-            // const quality = Number.parseInt(args['quality'] as string);
-            // const thumbnail = args['thumbnail'];
-            // const cachePath = path + JSON.stringify(args);
-            ctx.contentType = Mime.getType(extension) || 'text/plain';
+            const method = args['method'] || '';
+            const quality = Number.parseInt(args['quality']) || undefined;
+            const rotation = Number.parseInt(args['rotation']) || undefined;
+            let width = Number.parseInt(args['width']) || undefined;
+            const thumbnail = args['thumbnail']
+                ? args['thumbnail'].split('x').map(Number)
+                : [undefined, undefined];
+            const cachePath = path + JSON.stringify(args);
+            ctx.contentType = mime_1.default.getType(extension) || 'application/octet-stream';
+            if (args['quality'] ||
+                args['thumbnail'] ||
+                args['rotation'] ||
+                args['width'] ||
+                args['method']) {
+                return yield WebServer_1.WebServer.cache.smart(cachePath, () => __awaiter(this, void 0, void 0, function* () {
+                    ctx.contentType = 'image/jpeg';
+                    let buffer = null;
+                    if (width) {
+                        if (width <= 1) {
+                            width = 1;
+                        }
+                        if (width >= 1280) {
+                            width = 1280;
+                        }
+                        buffer = yield sharp_1.default(path)
+                            .jpeg({ quality: quality || 100 })
+                            .rotate(rotation)
+                            .resize(width)
+                            .withMetadata()
+                            .toBuffer();
+                    }
+                    else {
+                        buffer = yield sharp_1.default(path)
+                            .jpeg({ quality: quality || 100 })
+                            .rotate(rotation)
+                            .resize(thumbnail[0], thumbnail[1])
+                            .withMetadata()
+                            .toBuffer();
+                    }
+                    if (method === 'getSize') {
+                        ctx.contentType = 'application/json';
+                        return Buffer.from(JSON.stringify({
+                            size: buffer.length,
+                        }), 'utf-8');
+                    }
+                    return buffer;
+                }), 60);
+            }
             return yield Fs.readFile(path);
         });
     }

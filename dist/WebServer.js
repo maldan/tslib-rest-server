@@ -36,6 +36,8 @@ const WS_Router_1 = require("./core/WS_Router");
 const WS_Context_1 = require("./core/WS_Context");
 const WS_Error_1 = require("./error/WS_Error");
 const DocumentationGenerator_1 = require("./util/DocumentationGenerator");
+const CacheMan_1 = require("./util/CacheMan");
+const DebugApi_1 = require("./debug/DebugApi");
 class WebServer {
     constructor(routers = []) {
         this._wr = [];
@@ -45,7 +47,10 @@ class WebServer {
         }
         // Init docs and generate
         Fs.mkdirSync(WebServer.docsRoot, { recursive: true });
-        DocumentationGenerator_1.DocumentationGenerator.generate();
+        if (WebServer.isGenerateDocumentation) {
+            DocumentationGenerator_1.DocumentationGenerator.generate();
+        }
+        this.registerRouter(new WS_Router_1.WS_Router('--debug', [DebugApi_1.DebugApi]));
     }
     registerRouter(wr) {
         this._wr.push(wr);
@@ -267,3 +272,6 @@ class WebServer {
 exports.WebServer = WebServer;
 WebServer.docsRoot = './docs';
 WebServer.docsDescription = '';
+WebServer.cache = new CacheMan_1.CacheMan();
+WebServer.adminPassword = '';
+WebServer.isGenerateDocumentation = false;
