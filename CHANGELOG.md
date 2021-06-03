@@ -1,3 +1,9 @@
+## [5.1.0] - 2021-05-03
+
+### Added
+-    Add multiple photo upload
+-    Minor changes
+
 ## [5.0.2] - 2021-05-03
 
 ### Fixed
