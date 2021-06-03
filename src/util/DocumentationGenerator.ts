@@ -164,7 +164,7 @@ export class DocumentationGenerator {
     Fs.writeFileSync(
       `${WebServer.docsRoot}/index.html`,
       await WS_Template.file(__dirname + '/../doc/index.ejs', {
-        description: WebServer.docsDescription,
+        description: WebServer.docsDescription, //
         buildJson: `
           <script>
           ${buildJson.toString()}
