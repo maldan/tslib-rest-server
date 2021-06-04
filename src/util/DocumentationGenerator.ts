@@ -1,6 +1,7 @@
 import { ConfigParams } from '../core/WS_Decorator';
 import * as Fs from 'fs';
 import * as Path from 'path';
+import { PATTERN } from '../doc/Container';
 
 import { WebServer } from '../WebServer';
 import { WS_Error } from '../error/WS_Error';
@@ -165,19 +166,15 @@ export class DocumentationGenerator {
 
     Fs.writeFileSync(
       `${WebServer.docsRoot}/index.html`,
-      await WS_Template.file(
-        Path.dirname(process.execPath) +
-          '/node_modules/@maldan/tslib-rest-server/dist/doc/index.ejs',
-        {
-          description: WebServer.docsDescription, ////
-          buildJson: `
+      await WS_Template.template(PATTERN, {
+        description: WebServer.docsDescription,
+        buildJson: `
           <script>
           ${buildJson.toString()}
           </script>
         `,
-          out,
-        },
-      ),
+        out,
+      }),
     );
   }
 }

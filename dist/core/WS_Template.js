@@ -15,6 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WS_Template = void 0;
 const ejs_1 = __importDefault(require("ejs"));
 class WS_Template {
+    static template(template, data, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield ejs_1.default.render(template, data, options); //
+        });
+    }
     static file(path, data, options) {
         return __awaiter(this, void 0, void 0, function* () {
             return yield ejs_1.default.renderFile(path, data, options); //

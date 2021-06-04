@@ -30,7 +30,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DocumentationGenerator = void 0;
 const Fs = __importStar(require("fs"));
-const Path = __importStar(require("path"));
+const Container_1 = require("../doc/Container");
 const WebServer_1 = require("../WebServer");
 const WS_Error_1 = require("../error/WS_Error");
 const WS_Template_1 = require("../core/WS_Template");
@@ -152,8 +152,7 @@ class DocumentationGenerator {
         <hr>
       `;
             }
-            Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, yield WS_Template_1.WS_Template.file(Path.dirname(process.execPath) +
-                '/node_modules/@maldan/tslib-rest-server/dist/doc/index.ejs', {
+            Fs.writeFileSync(`${WebServer_1.WebServer.docsRoot}/index.html`, yield WS_Template_1.WS_Template.template(Container_1.PATTERN, {
                 description: WebServer_1.WebServer.docsDescription,
                 buildJson: `
           <script>
