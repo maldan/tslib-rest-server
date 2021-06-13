@@ -38,7 +38,7 @@ export class CacheMan {
     console.log(`Add to cache ${time}`);
     const item = await value();
     this._cache[key] = new CacheItem(item, time);
-    return item as T;
+    return this._cache[key].value as T;
   }
 
   /*putIfNotExists<T>(key: string, value: unknown, time: number = 10): T {

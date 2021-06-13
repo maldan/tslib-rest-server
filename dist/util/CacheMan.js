@@ -46,7 +46,7 @@ class CacheMan {
             console.log(`Add to cache ${time}`);
             const item = yield value();
             this._cache[key] = new CacheItem(item, time);
-            return item;
+            return this._cache[key].value;
         });
     }
     /*putIfNotExists<T>(key: string, value: unknown, time: number = 10): T {

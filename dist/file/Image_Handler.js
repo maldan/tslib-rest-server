@@ -49,19 +49,23 @@ class Image_Handler {
             const quality = Number.parseInt(args['quality']) || undefined;
             const rotation = Number.parseInt(args['rotation']) || undefined;
             let width = Number.parseInt(args['width']) || undefined;
+            // const crop = ((args['width'] as string) || '').split(',').map(Number);
             const thumbnail = args['thumbnail']
                 ? args['thumbnail'].split('x').map(Number)
                 : [undefined, undefined];
             const cachePath = path + JSON.stringify(args);
             ctx.contentType = mime_1.default.getType(extension) || 'application/octet-stream';
+            console.log(cachePath);
             if (args['quality'] ||
                 args['thumbnail'] ||
                 args['rotation'] ||
                 args['width'] ||
+                args['crop'] ||
                 args['method']) {
                 return yield WebServer_1.WebServer.cache.smart(cachePath, () => __awaiter(this, void 0, void 0, function* () {
                     ctx.contentType = 'image/jpeg';
                     let buffer = null;
+                    const FUCK_YOU_DIE = yield Fs.readFile(path);
                     if (width) {
                         if (width <= 1) {
                             width = 1;
@@ -69,7 +73,7 @@ class Image_Handler {
                         if (width >= 1280) {
                             width = 1280;
                         }
-                        buffer = yield sharp_1.default(path)
+                        buffer = yield sharp_1.default(FUCK_YOU_DIE)
                             .jpeg({ quality: quality || 100 })
                             .rotate(rotation)
                             .resize(width)
@@ -77,19 +81,34 @@ class Image_Handler {
                             .toBuffer();
                     }
                     else {
-                        buffer = yield sharp_1.default(path)
+                        buffer = yield sharp_1.default(FUCK_YOU_DIE)
                             .jpeg({ quality: quality || 100 })
                             .rotate(rotation)
                             .resize(thumbnail[0], thumbnail[1])
                             .withMetadata()
                             .toBuffer();
                     }
+                    /*if (crop.length) {
+                      const metaData = await Sharp(buffer).metadata();
+                      const w = metaData.width || 0;
+                      const h = metaData.height || 0;
+                      buffer = await Sharp(path)
+                        .extract({
+                          left: crop[0] * w,
+                          top: crop[1] * h,
+                          width: crop[2] * w,
+                          height: crop[3] * h,
+                        })
+                        .withMetadata()
+                        .toBuffer();
+                    }*/
                     if (method === 'getSize') {
                         ctx.contentType = 'application/json';
                         return Buffer.from(JSON.stringify({
                             size: buffer.length,
                         }), 'utf-8');
                     }
+                    console.log(buffer.length);
                     return buffer;
                 }), 60);
             }

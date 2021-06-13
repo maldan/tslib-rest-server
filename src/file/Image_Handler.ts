@@ -18,6 +18,7 @@ export class Image_Handler implements IFileHandler {
     const quality = Number.parseInt(args['quality'] as string) || undefined;
     const rotation = Number.parseInt(args['rotation'] as string) || undefined;
     let width = Number.parseInt(args['width'] as string) || undefined;
+    // const crop = ((args['width'] as string) || '').split(',').map(Number);
 
     const thumbnail = args['thumbnail']
       ? (args['thumbnail'] as string).split('x').map(Number)
@@ -31,6 +32,7 @@ export class Image_Handler implements IFileHandler {
       args['thumbnail'] ||
       args['rotation'] ||
       args['width'] ||
+      args['crop'] ||
       args['method']
     ) {
       return await WebServer.cache.smart<Buffer>(
@@ -38,6 +40,8 @@ export class Image_Handler implements IFileHandler {
         async () => {
           ctx.contentType = 'image/jpeg';
           let buffer = null;
+          const FUCK_YOU_DIE = await Fs.readFile(path);
+
           if (width) {
             if (width <= 1) {
               width = 1;
@@ -45,20 +49,35 @@ export class Image_Handler implements IFileHandler {
             if (width >= 1280) {
               width = 1280;
             }
-            buffer = await Sharp(path)
+            buffer = await Sharp(FUCK_YOU_DIE)
               .jpeg({ quality: quality || 100 })
               .rotate(rotation)
               .resize(width)
               .withMetadata()
               .toBuffer();
           } else {
-            buffer = await Sharp(path)
+            buffer = await Sharp(FUCK_YOU_DIE)
               .jpeg({ quality: quality || 100 })
               .rotate(rotation)
               .resize(thumbnail[0], thumbnail[1])
               .withMetadata()
               .toBuffer();
           }
+
+          /*if (crop.length) {
+            const metaData = await Sharp(buffer).metadata();
+            const w = metaData.width || 0;
+            const h = metaData.height || 0;
+            buffer = await Sharp(path)
+              .extract({
+                left: crop[0] * w,
+                top: crop[1] * h,
+                width: crop[2] * w,
+                height: crop[3] * h,
+              })
+              .withMetadata()
+              .toBuffer();
+          }*/
 
           if (method === 'getSize') {
             ctx.contentType = 'application/json';
