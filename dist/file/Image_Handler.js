@@ -55,7 +55,6 @@ class Image_Handler {
                 : [undefined, undefined];
             const cachePath = path + JSON.stringify(args);
             ctx.contentType = mime_1.default.getType(extension) || 'application/octet-stream';
-            console.log(cachePath);
             if (args['quality'] ||
                 args['thumbnail'] ||
                 args['rotation'] ||
@@ -105,10 +104,9 @@ class Image_Handler {
                     if (method === 'getSize') {
                         ctx.contentType = 'application/json';
                         return Buffer.from(JSON.stringify({
-                            size: buffer.length,
+                            size: buffer.length, //
                         }), 'utf-8');
                     }
-                    console.log(buffer.length);
                     return buffer;
                 }), 60);
             }

@@ -83,7 +83,7 @@ export class Image_Handler implements IFileHandler {
             ctx.contentType = 'application/json';
             return Buffer.from(
               JSON.stringify({
-                size: buffer.length,
+                size: buffer.length, //
               }),
               'utf-8',
             );
